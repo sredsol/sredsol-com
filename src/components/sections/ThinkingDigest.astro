@@ -108,7 +108,7 @@ const displayedArticles = limit ? thinkingArticles.slice(0, limit) : thinkingArt
 
   .thinking-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(20rem, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 20rem), 1fr));
     gap: var(--space-xl);
     margin-top: var(--space-2xl);
   }

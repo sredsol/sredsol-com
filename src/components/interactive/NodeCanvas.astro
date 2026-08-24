@@ -73,11 +73,11 @@ const { nodeCount = 36, class: className } = Astro.props as Props;
         const w = width || 1200;
         const h = height || 700;
 
-        // 1. Four Domain Master Hubs (Positioned safely at outer perimeters away from hero text)
-        const leftX = Math.max(32, Math.min(w * 0.08, 90));
-        const rightX = Math.min(w - 32, Math.max(w * 0.92, w - 90));
-        const topY = Math.max(48, Math.min(h * 0.16, 110));
-        const bottomY = Math.min(h - 48, Math.max(h * 0.84, h - 110));
+        // 1. Four Domain Master Hubs (Positioned safely at outer corner perimeters)
+        const leftX = Math.max(28, Math.min(w * 0.05, 64));
+        const rightX = Math.min(w - 28, Math.max(w * 0.95, w - 64));
+        const topY = Math.max(28, Math.min(h * 0.08, 48));
+        const bottomY = Math.min(h - 32, Math.max(h * 0.91, h - 52));
 
         const hubs = [
           {
@@ -89,27 +89,27 @@ const { nodeCount = 36, class: className } = Astro.props as Props;
             align: "left" as const,
           },
           {
-            baseX: leftX + 16,
+            baseX: leftX + 8,
             baseY: bottomY,
             hubCode: "02 // PHYS",
             hubLabel: "CIRCUITS & ROBOTICS",
-            coordLabel: `X:${Math.round(leftX + 16)} Y:${Math.round(bottomY)}`,
+            coordLabel: `X:${Math.round(leftX + 8)} Y:${Math.round(bottomY)}`,
             align: "left" as const,
           },
           {
             baseX: rightX,
-            baseY: topY + 10,
+            baseY: topY,
             hubCode: "03 // OBS",
             hubLabel: "TELEMETRY & SPACE",
-            coordLabel: `X:${Math.round(rightX)} Y:${Math.round(topY + 10)}`,
+            coordLabel: `X:${Math.round(rightX)} Y:${Math.round(topY)}`,
             align: "right" as const,
           },
           {
-            baseX: rightX - 16,
+            baseX: rightX - 8,
             baseY: bottomY,
             hubCode: "04 // LEARN",
             hubLabel: "LEARNINGOS",
-            coordLabel: `X:${Math.round(rightX - 16)} Y:${Math.round(bottomY)}`,
+            coordLabel: `X:${Math.round(rightX - 8)} Y:${Math.round(bottomY)}`,
             align: "right" as const,
           },
         ];
@@ -133,29 +133,21 @@ const { nodeCount = 36, class: className } = Astro.props as Props;
 
         // 2. Satellite Particles
         const satelliteLabels = ["WASM", "I2C", "SQLITE", "FFT", "GRAPH", "SIMD", "UART", "GPU"];
-        const count = parseInt(container.dataset.count || "36", 10);
+        const count = parseInt(container.dataset.count || "38", 10);
 
         for (let i = 0; i < count; i++) {
-          // Initialize outside the center text zone
-          let rx = Math.random() * w;
+          const rx = Math.random() * w;
           const ry = Math.random() * h;
-
-          // If spawned in center text area, shift to flanks
-          const cx = w / 2;
-          const cy = h / 2 - 10;
-          if (Math.abs(rx - cx) < w * 0.35 && Math.abs(ry - cy) < h * 0.3) {
-            rx = rx < cx ? Math.random() * (w * 0.18) : w - Math.random() * (w * 0.18);
-          }
 
           nodes.push({
             x: rx,
             y: ry,
             baseX: rx,
             baseY: ry,
-            vx: prefersReducedMotion ? 0 : (Math.random() - 0.5) * 0.4,
-            vy: prefersReducedMotion ? 0 : (Math.random() - 0.5) * 0.4,
-            radius: i % 5 === 0 ? 2.5 : 1.5,
-            label: i % 4 === 0 ? satelliteLabels[i % satelliteLabels.length] : undefined,
+            vx: prefersReducedMotion ? 0 : (Math.random() - 0.5) * 0.45,
+            vy: prefersReducedMotion ? 0 : (Math.random() - 0.5) * 0.45,
+            radius: i % 4 === 0 ? 2.5 : 1.5,
+            label: i % 5 === 0 ? satelliteLabels[i % satelliteLabels.length] : undefined,
           });
         }
       }
@@ -198,11 +190,11 @@ const { nodeCount = 36, class: className } = Astro.props as Props;
         const colors = getThemeColors();
         const centerExclusionX = width / 2;
         const centerExclusionY = height / 2 - 10;
-        const exclusionRadiusX = Math.min(width * 0.38, 420);
-        const exclusionRadiusY = Math.min(height * 0.28, 160);
+        const exclusionRadiusX = Math.min(width * 0.35, 380);
+        const exclusionRadiusY = Math.min(height * 0.25, 140);
 
         // 1. Draw Network Connections
-        const maxDist = 140;
+        const maxDist = 135;
         for (let i = 0; i < nodes.length; i++) {
           for (let j = i + 1; j < nodes.length; j++) {
             const dx = nodes[i].x - nodes[j].x;
@@ -210,24 +202,24 @@ const { nodeCount = 36, class: className } = Astro.props as Props;
             const dist = Math.sqrt(dx * dx + dy * dy);
 
             if (dist < maxDist) {
-              const alpha = (1 - dist / maxDist) * (colors.isDark ? 0.22 : 0.12);
+              const alpha = (1 - dist / maxDist) * (colors.isDark ? 0.38 : 0.28);
               ctx.strokeStyle = colors.isDark
                 ? `rgba(91, 115, 255, ${alpha})`
-                : `rgba(48, 66, 230, ${alpha})`;
-              ctx.lineWidth = nodes[i].isHub || nodes[j].isHub ? 1.2 : 0.8;
+                : `rgba(37, 99, 235, ${alpha})`;
+              ctx.lineWidth = nodes[i].isHub || nodes[j].isHub ? 1.4 : 0.9;
               ctx.beginPath();
               ctx.moveTo(nodes[i].x, nodes[i].y);
               ctx.lineTo(nodes[j].x, nodes[j].y);
               ctx.stroke();
 
               // Pulsing Signal along links
-              if ((i + j) % 8 === 0 && !prefersReducedMotion) {
+              if ((i + j) % 6 === 0 && !prefersReducedMotion) {
                 const progress = (time * 0.5 + ((i * 11) % 10) / 10) % 1;
                 const px = nodes[i].x + (nodes[j].x - nodes[i].x) * progress;
                 const py = nodes[i].y + (nodes[j].y - nodes[i].y) * progress;
                 ctx.fillStyle = colors.accent;
                 ctx.beginPath();
-                ctx.arc(px, py, 1.5, 0, Math.PI * 2);
+                ctx.arc(px, py, 1.8, 0, Math.PI * 2);
                 ctx.fill();
               }
             }
@@ -240,8 +232,8 @@ const { nodeCount = 36, class: className } = Astro.props as Props;
             const pdx = pointerX - node.x;
             const pdy = pointerY - node.y;
             const pdist = Math.sqrt(pdx * pdx + pdy * pdy);
-            if (pdist < 100) {
-              const alpha = (1 - pdist / 100) * (colors.isDark ? 0.35 : 0.22);
+            if (pdist < 120) {
+              const alpha = (1 - pdist / 120) * (colors.isDark ? 0.45 : 0.32);
               ctx.strokeStyle = `rgba(59, 130, 246, ${alpha})`;
               ctx.lineWidth = 1;
               ctx.setLineDash([3, 3]);
@@ -259,8 +251,8 @@ const { nodeCount = 36, class: className } = Astro.props as Props;
           if (node.isHub) {
             // Hub Floating Physics (Subtle gentle orbital motion)
             if (!prefersReducedMotion) {
-              node.x = node.baseX + Math.cos(time * 0.6 + node.baseY) * 4;
-              node.y = node.baseY + Math.sin(time * 0.6 + node.baseX) * 4;
+              node.x = node.baseX + Math.cos(time * 0.6 + node.baseY) * 3;
+              node.y = node.baseY + Math.sin(time * 0.6 + node.baseX) * 3;
             }
 
             // Pointer repulsion on hubs
@@ -282,23 +274,23 @@ const { nodeCount = 36, class: className } = Astro.props as Props;
             ctx.fill();
 
             // Concentric Radar Rings
-            ctx.strokeStyle = colors.isDark ? "rgba(91, 115, 255, 0.5)" : "rgba(48, 66, 230, 0.4)";
+            ctx.strokeStyle = colors.isDark ? "rgba(91, 115, 255, 0.5)" : "rgba(37, 99, 235, 0.45)";
             ctx.lineWidth = 1.2;
             ctx.beginPath();
             ctx.arc(node.x, node.y, node.radius * 2.2, 0, Math.PI * 2);
             ctx.stroke();
 
-            ctx.strokeStyle = colors.isDark ? "rgba(255, 255, 255, 0.12)" : "rgba(0, 0, 0, 0.08)";
+            ctx.strokeStyle = colors.isDark ? "rgba(255, 255, 255, 0.15)" : "rgba(0, 0, 0, 0.1)";
             ctx.lineWidth = 0.8;
             ctx.beginPath();
             ctx.arc(node.x, node.y, node.radius * 3.8, 0, Math.PI * 2);
             ctx.stroke();
             ctx.shadowBlur = 0;
 
-            // Sleek HUD Text Labels (Only if width > 640px)
-            if (width > 640 && node.hubCode && node.hubLabel) {
+            // Sleek HUD Text Labels (Only if screen is wide enough to avoid hero headline overlap)
+            if (width >= 1024 && height >= 450 && node.hubCode && node.hubLabel) {
               const isRight = node.align === "right";
-              const textX = isRight ? node.x - 16 : node.x + 16;
+              const textX = isRight ? node.x - 14 : node.x + 14;
               const textY = node.y - 6;
 
               ctx.textAlign = isRight ? "right" : "left";
@@ -353,7 +345,7 @@ const { nodeCount = 36, class: className } = Astro.props as Props;
             }
 
             // Satellite Dot
-            ctx.fillStyle = colors.isDark ? "rgba(255, 255, 255, 0.7)" : "rgba(30, 41, 59, 0.65)";
+            ctx.fillStyle = colors.isDark ? "rgba(255, 255, 255, 0.75)" : "rgba(37, 99, 235, 0.65)";
             ctx.beginPath();
             ctx.arc(node.x, node.y, node.radius, 0, Math.PI * 2);
             ctx.fill();

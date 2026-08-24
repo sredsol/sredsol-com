@@ -114,19 +114,25 @@ const { class: className } = Astro.props as Props;
 
   .hero-node-field__title {
     margin: 0;
-    font-size: clamp(2.35rem, 5.5vw, 4.5rem);
+    font-size: clamp(1.85rem, 6.5vw, 4.5rem);
     font-family: var(--font-heading);
     font-weight: 800;
-    line-height: 1.07;
+    line-height: 1.1;
     letter-spacing: -0.035em;
     color: var(--foreground);
+    word-break: break-word;
   }
 
   .hero-node-field__highlight {
     position: relative;
     display: inline-block;
     color: var(--foreground);
-    white-space: nowrap;
+  }
+
+  @media (min-width: 40rem) {
+    .hero-node-field__highlight {
+      white-space: nowrap;
+    }
   }
 
   .hero-node-field__arc {

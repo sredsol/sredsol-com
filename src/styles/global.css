@@ -168,9 +168,25 @@
   top: 0;
 }
 
-/* Base typography */
+/* Base layout & typography */
+html {
+  width: 100%;
+  max-width: 100vw;
+  overflow-x: hidden;
+  box-sizing: border-box;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: inherit;
+}
+
 body {
   margin: 0;
+  width: 100%;
+  max-width: 100vw;
+  overflow-x: hidden;
   font-family: var(--font-sans);
   color: var(--foreground);
   background-color: var(--background);

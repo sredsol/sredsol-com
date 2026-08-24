@@ -221,9 +221,8 @@ const domainLabel = {
   .system-layer__meta-primary {
     display: flex;
     align-items: center;
-    flex-wrap: nowrap;
+    flex-wrap: wrap;
     gap: 0.5rem;
-    white-space: nowrap;
   }
 
   .system-layer__code {
@@ -231,7 +230,6 @@ const domainLabel = {
     font-size: 0.75rem;
     color: var(--muted-foreground);
     letter-spacing: 0.05em;
-    white-space: nowrap;
   }
 
   .system-layer__bridge-tag {
@@ -245,7 +243,8 @@ const domainLabel = {
     padding: 0.12rem 0.5rem;
     border-radius: var(--radius-sm);
     border: 1px solid var(--border);
-    white-space: nowrap;
+    flex-wrap: wrap;
+    word-break: break-word;
   }
 
   .system-layer__bridge-label {
@@ -291,6 +290,13 @@ const domainLabel = {
     background: var(--muted);
     color: var(--foreground);
     border: 1px solid var(--border);
+  }
+
+  @media (max-width: 40rem) {
+    .system-layer {
+      padding: var(--space-sm);
+      gap: var(--space-md);
+    }
   }
 
   @media (prefers-reduced-motion: reduce) {

@@ -1,0 +1,62 @@
+---
+import { siteConfig } from "../../config/site.config";
+export interface Props {
+  href?: string;
+}
+
+const { href = "/" } = Astro.props as Props;
+---
+
+<a href={href} class="logo" aria-label={siteConfig.name}>
+  <img
+    src="/logo.svg"
+    alt=""
+    width="32"
+    height="32"
+    class="logo__img"
+    loading="eager"
+    decoding="async"
+    aria-hidden="true"
+  />
+  <span class="logo__name">{siteConfig.name}</span>
+</a>
+
+<style>
+  .logo {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.65rem;
+    text-decoration: none;
+    color: var(--color-text-primary);
+    border-radius: var(--radius-md);
+  }
+
+  .logo:focus-visible {
+    outline: 2px solid var(--ring);
+    outline-offset: 3px;
+  }
+
+  .logo__img {
+    width: 2rem;
+    height: 2rem;
+    object-fit: contain;
+    flex-shrink: 0;
+    border-radius: var(--radius-sm);
+  }
+
+  .logo__name {
+    font-family: var(--font-heading);
+    font-weight: 700;
+    font-size: 1.0625rem;
+    letter-spacing: 0.04em;
+    white-space: nowrap;
+  }
+
+  /* Keep the brand compact on small screens — monogram remains. */
+  @media (max-width: 26rem) {
+    .logo__name {
+      display: none;
+    }
+  }
+</style>
+

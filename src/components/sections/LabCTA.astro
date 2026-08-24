@@ -1,0 +1,117 @@
+---
+import { cn } from "../../lib/cn";
+import { Button } from "../ui/form";
+import { GridBackground } from "../ui/layout";
+import { SignalBadge } from "../ui/data-display";
+
+export interface Props {
+  locale?: string;
+  class?: string;
+}
+
+const { class: className } = Astro.props as Props;
+---
+
+<section class={cn("lab-cta-section py-20", className)}>
+  <div class="container">
+    <div class="lab-cta-card">
+      <GridBackground variant="dots" glow glowPosition="center" mask="radial" />
+
+      <div class="lab-cta-card__inner">
+        <div class="lab-cta-card__badge">
+          <SignalBadge protocol="LAB" status="streaming" latency="LIVE RESEARCH" />
+        </div>
+
+        <h2 class="lab-cta-card__title">
+          There is always another system to build.
+        </h2>
+
+        <p class="lab-cta-card__lead">
+          Step inside our active research sandboxes, test experimental algorithms, and explore computational prototypes.
+        </p>
+
+        <div class="lab-cta-card__actions">
+          <Button variant="primary" size="lg" href="/lab">
+            <span>[ ↗ Enter the Lab ]</span>
+            <span class="lab-cta-card__arrow" aria-hidden="true">&rarr;</span>
+          </Button>
+          <Button variant="secondary" size="lg" href="/thinking">
+            <span>Read our Thinking</span>
+          </Button>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<style>
+  .lab-cta-section {
+    position: relative;
+  }
+
+  .lab-cta-card {
+    position: relative;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-2xl);
+    background: var(--card);
+    overflow: hidden;
+    box-shadow: var(--shadow-md);
+  }
+
+  .lab-cta-card__inner {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    padding: clamp(3rem, 6vw, 5rem) var(--space-xl);
+    position: relative;
+    z-index: 1;
+  }
+
+  .lab-cta-card__badge {
+    margin-bottom: var(--space-lg);
+  }
+
+  .lab-cta-card__title {
+    margin: 0;
+    font-size: clamp(1.85rem, 4vw, 3rem);
+    font-family: var(--font-heading);
+    font-weight: 800;
+    line-height: 1.15;
+    letter-spacing: -0.02em;
+    color: var(--foreground);
+    max-width: 36rem;
+  }
+
+  .lab-cta-card__lead {
+    margin: var(--space-lg) 0 0;
+    font-size: clamp(1rem, 1.5vw, 1.15rem);
+    color: var(--muted-foreground);
+    line-height: 1.6;
+    max-width: 32rem;
+  }
+
+  .lab-cta-card__actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-md);
+    margin-top: var(--space-xl);
+  }
+
+  .lab-cta-card__arrow {
+    display: inline-block;
+    transition: transform 0.15s ease;
+  }
+
+  .lab-cta-card__actions a:hover .lab-cta-card__arrow {
+    transform: translateX(4px);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .lab-cta-card__arrow {
+      transition: none;
+    }
+  }
+</style>

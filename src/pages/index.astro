@@ -1,0 +1,31 @@
+---
+import MarketingLayout from "../layouts/MarketingLayout.astro";
+import {
+  HeroNodeField,
+  DomainGrid,
+  EditorialManifesto,
+  ExplorationsGrid,
+  SystemsLayerDiagram,
+  ThinkingDigest,
+  LabCTA,
+} from "../components/sections";
+import { siteConfig } from "../config/site.config";
+
+const locale = (Astro.currentLocale || "en") as "en";
+---
+
+<MarketingLayout
+  title={`${siteConfig.name} — ${siteConfig.description}`}
+  description={siteConfig.description}
+  locale={locale}
+  path="/"
+>
+  <HeroNodeField locale={locale} />
+  <DomainGrid locale={locale} />
+  <EditorialManifesto locale={locale} />
+  <ExplorationsGrid limit={4} showViewAll={true} locale={locale} />
+  <SystemsLayerDiagram locale={locale} />
+  <ThinkingDigest limit={3} locale={locale} />
+  <LabCTA locale={locale} />
+</MarketingLayout>
+

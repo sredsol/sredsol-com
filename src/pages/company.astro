@@ -1,0 +1,849 @@
+---
+import MarketingLayout from "../layouts/MarketingLayout.astro";
+import { GridBackground } from "../components/ui/layout";
+import { NodeIndicator, SystemMark } from "../components/ui/data-display";
+import { LabCTA } from "../components/sections";
+import { siteConfig } from "../config/site.config";
+
+const locale = (Astro.currentLocale || "en") as "en";
+
+const pipelineStages = [
+  {
+    step: "01",
+    label: "OBSERVE",
+    detail: "Telemetry & Sensor Streams",
+    color: "var(--color-accent-cyan)",
+  },
+  {
+    step: "02",
+    label: "MODEL",
+    detail: "Mathematical Formalisms",
+    color: "var(--color-brand-primary)",
+  },
+  {
+    step: "03",
+    label: "BUILD",
+    detail: "Executable Simulation Kernels",
+    color: "var(--color-accent-amber)",
+  },
+  {
+    step: "04",
+    label: "MEASURE",
+    detail: "Scope Telemetry & Feedback",
+    color: "var(--color-accent-emerald)",
+  },
+  {
+    step: "05",
+    label: "REFLECT",
+    detail: "Cognitive Synthesis & Insight",
+    color: "var(--color-brand-secondary)",
+  },
+];
+
+const principles = [
+  {
+    code: "01 // EMPIRICISM",
+    title: "Observation Precedes Explanation",
+    domainTag: "OBSERVATION",
+    accentColor: "var(--color-accent-emerald)",
+    thesis:
+      "Observe, manipulate, and experiment with living dynamics before imposing formal abstractions or terminology.",
+    practice:
+      "We construct exploratory environments where researchers and learners directly manipulate parameters, observe waveforms in real time, and derive mathematical models from empirical behavior.",
+    systemDomain: "Observation & Physical Systems",
+  },
+  {
+    code: "02 // COMPUTATION",
+    title: "Computation as a Medium of Thought",
+    domainTag: "COMPUTATION",
+    accentColor: "var(--color-brand-primary)",
+    thesis:
+      "Computation isn't merely a delivery mechanism for static text or video; it is an active medium for constructing and testing ideas.",
+    practice:
+      "We build executable simulation kernels, dynamic geometric engines, and real-time state machines as active thinking instruments rather than passive instructional media.",
+    systemDomain: "Algorithmic & Mathematical Systems",
+  },
+  {
+    code: "03 // PHYSICAL BRIDGES",
+    title: "Bridging Abstract and Tangible",
+    domainTag: "PHYSICAL SYSTEMS",
+    accentColor: "var(--color-accent-amber)",
+    thesis:
+      "Connect mathematical models to sensors, embedded microcontrollers, telemetry streams, and physical reality.",
+    practice:
+      "We engineer low-latency hardware bridges (WebSerial, I2C/SPI), microcontroller drivers, and physical computing sandboxes that ground abstract algorithms in tangible physical phenomena.",
+    systemDomain: "Hardware & Edge Computing",
+  },
+  {
+    code: "04 // AGENCY",
+    title: "Systems Should Invite Exploration",
+    domainTag: "LEARNING",
+    accentColor: "var(--color-brand-secondary)",
+    thesis:
+      "Technology should expand people's autonomous capacity to ask questions, construct representations, experiment, and reflect.",
+    practice:
+      "We architect constructivist cognitive workspaces like LearningOS with local-first SQLite persistence, transparent state graphs, and open tools that invite self-directed inquiry.",
+    systemDomain: "Cognitive Environments & LearningOS",
+  },
+];
+
+const corporateTiers = [
+  {
+    layer: "01 // WHY",
+    label: "Guiding Philosophy",
+    description: "Constructivist principles and empirical epistemologies that dictate how we architect technology.",
+    linkText: "Review Principles ↑",
+    href: "#principles",
+    badge: "Foundation",
+    accentColor: "var(--color-accent-emerald)",
+  },
+  {
+    layer: "02 // WHAT",
+    label: "Computational Domains",
+    description: "Mathematical formalisms, execution kernels, spatial interfaces, and hardware telemetry bridges.",
+    linkText: "Inspect Technology →",
+    href: "/technology",
+    badge: "Architecture",
+    accentColor: "var(--color-brand-primary)",
+  },
+  {
+    layer: "03 // PROOF",
+    label: "Interactive Studios",
+    description: "Five living computational sandboxes: Physical Computing, LearningOS, Observation Studio, OxiGeo, and MathArt.",
+    linkText: "Explore Studios →",
+    href: "/explorations",
+    badge: "Live Systems",
+    accentColor: "var(--color-accent-amber)",
+  },
+];
+---
+
+<MarketingLayout
+  title={`Company & Philosophy — ${siteConfig.name}`}
+  description="SREDSOL philosophy, principles, and mission: Technology for Exploration."
+  locale={locale}
+  path="/company"
+>
+  <!-- Page Header & Hero -->
+  <section class="page-header py-16">
+    <GridBackground variant="crosshairs" glow glowPosition="top" mask="radial" />
+    <div class="container">
+      <div class="page-header__meta">
+        <NodeIndicator
+          label="PHILOSOPHY // RESEARCH & MISSION"
+          code="CO-01"
+          status="active"
+          size="sm"
+        />
+      </div>
+      <h1 class="page-header__title">Technology for Exploration</h1>
+      <p class="page-header__lead">
+        SREDSOL builds computational systems, interactive instruments, and intelligent tools designed to expand human agency and curiosity.
+      </p>
+
+      <!-- System Pipeline Artifact -->
+      <div class="hero-pipeline-wrapper" aria-label="SREDSOL Engineering Methodology Cycle">
+        <div class="hero-pipeline-header">
+          <div class="hero-pipeline-header__left">
+            <span class="hero-pipeline-status-dot" aria-hidden="true"></span>
+            <span class="hero-pipeline-label">METHODOLOGY PIPELINE // COGNITIVE CYCLE</span>
+          </div>
+          <span class="hero-pipeline-bus">BUS: 100 Hz SYNC · 5 STAGES</span>
+        </div>
+
+        <ol class="hero-pipeline-track">
+          {
+            pipelineStages.map((stage, idx) => (
+              <li class="hero-pipeline-step">
+                <div class="hero-pipeline-card">
+                  <div class="hero-pipeline-card__top">
+                    <span
+                      class={`hero-pipeline-dot hero-pipeline-dot--${stage.step}`}
+                      aria-hidden="true"
+                    />
+                    <span class="hero-pipeline-code">STAGE {stage.step}</span>
+                  </div>
+                  <strong class="hero-pipeline-name">{stage.label}</strong>
+                  <span class="hero-pipeline-detail">{stage.detail}</span>
+                </div>
+                {idx < pipelineStages.length - 1 && (
+                  <div class="hero-pipeline-connector" aria-hidden="true">
+                    <span class="hero-pipeline-line" />
+                    <span class="hero-pipeline-arrow">&rarr;</span>
+                  </div>
+                )}
+              </li>
+            ))
+          }
+        </ol>
+      </div>
+    </div>
+  </section>
+
+  <!-- Principles Section (2x2 Grid with Domain Color Accents) -->
+  <section class="principles py-20" id="principles">
+    <div class="container">
+      <header class="section-head">
+        <p class="section-head__eyebrow">GUIDING PRINCIPLES</p>
+        <h2 class="section-head__title">How We Build</h2>
+        <p class="section-head__lead">
+          Principles that guide how we design computational systems, instruments, and learning environments.
+        </p>
+      </header>
+
+      <div class="principles-grid">
+        {
+          principles.map((item) => (
+            <article class="principle-card" data-code={item.code.slice(0, 2)}>
+              <div class="principle-card__top-bar" aria-hidden="true" />
+              <header class="principle-card__header">
+                <div class="principle-card__meta">
+                  <span class="principle-card__code">{item.code}</span>
+                  <span class="principle-card__domain-tag">{item.domainTag}</span>
+                </div>
+                <h3 class="principle-card__title">{item.title}</h3>
+                <span class="principle-card__subsystem">{item.systemDomain}</span>
+              </header>
+
+              <div class="principle-card__thesis">
+                <span class="principle-card__section-label">PHILOSOPHICAL THESIS</span>
+                <p class="principle-card__text">{item.thesis}</p>
+              </div>
+
+              <div class="principle-card__consequence">
+                <span class="principle-card__section-label">WHAT THIS MEANS IN PRACTICE</span>
+                <p class="principle-card__text principle-card__text--practice">{item.practice}</p>
+              </div>
+
+              <footer class="principle-card__footer">
+                <span class="principle-card__status-indicator">
+                  <span class="principle-card__status-dot" aria-hidden="true" />
+                  <span>PRINCIPLE VERIFIED</span>
+                </span>
+              </footer>
+            </article>
+          ))
+        }
+      </div>
+    </div>
+  </section>
+
+  <!-- Three-Tier Corporate Architecture -->
+  <section class="ecosystem-section py-20">
+    <div class="container">
+      <header class="section-head">
+        <p class="section-head__eyebrow">SYSTEM ARCHITECTURE</p>
+        <h2 class="section-head__title">From Philosophy to Systems</h2>
+        <p class="section-head__lead">
+          How our foundational principles materialize into computational instruments and exploration studios.
+        </p>
+      </header>
+
+      <div class="ecosystem-grid">
+        {
+          corporateTiers.map((tier) => (
+            <article class="ecosystem-card" data-tier={tier.layer.slice(0, 2)}>
+              <div class="ecosystem-card__top-bar" aria-hidden="true" />
+              <div class="ecosystem-card__meta">
+                <span class="ecosystem-card__tier">{tier.layer}</span>
+                <span class="ecosystem-card__badge">{tier.badge}</span>
+              </div>
+              <h3 class="ecosystem-card__title">{tier.label}</h3>
+              <p class="ecosystem-card__description">{tier.description}</p>
+              <div class="ecosystem-card__footer">
+                <a href={tier.href} class="ecosystem-card__link">
+                  <span>{tier.linkText}</span>
+                </a>
+              </div>
+            </article>
+          ))
+        }
+      </div>
+    </div>
+  </section>
+
+  <!-- Contact & Communication -->
+  <section class="contact-info py-20">
+    <div class="container">
+      <div class="contact-card">
+        <SystemMark size="md" align="center" class="contact-card__mark" />
+        <h2 class="contact-card__title">Connect with SREDSOL</h2>
+        <p class="contact-card__lead">
+          For collaboration, research partnerships, and inquiries about our studios and tools.
+        </p>
+        <div class="contact-card__meta">
+          <a href={`mailto:${siteConfig.email}`} class="contact-card__email">
+            <span class="contact-card__email-icon" aria-hidden="true">✉</span>
+            <span>{siteConfig.email}</span>
+          </a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <LabCTA locale={locale} />
+</MarketingLayout>
+
+<style>
+  .page-header {
+    position: relative;
+    border-bottom: 1px solid var(--border);
+    text-align: center;
+    padding-bottom: var(--space-2xl);
+  }
+
+  .page-header__meta {
+    display: flex;
+    justify-content: center;
+    margin-bottom: var(--space-md);
+  }
+
+  .page-header__title {
+    margin: 0;
+    font-size: clamp(2.25rem, 5vw, 3.75rem);
+    font-family: var(--font-heading);
+    font-weight: 800;
+    letter-spacing: -0.025em;
+    color: var(--foreground);
+    line-height: 1.15;
+  }
+
+  .page-header__lead {
+    margin: var(--space-md) auto 0;
+    font-size: clamp(1rem, 1.5vw, 1.15rem);
+    color: var(--muted-foreground);
+    line-height: 1.6;
+    max-width: 44rem;
+  }
+
+  /* Hero Pipeline Artifact */
+  .hero-pipeline-wrapper {
+    margin: var(--space-2xl) auto 0;
+    max-width: 64rem;
+    padding: var(--space-md) var(--space-lg);
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-2xl);
+    box-shadow: var(--shadow-md);
+    text-align: left;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .hero-pipeline-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-bottom: var(--space-sm);
+    margin-bottom: var(--space-md);
+    border-bottom: 1px solid var(--border);
+    font-family: var(--font-mono);
+    font-size: 0.6875rem;
+    color: var(--muted-foreground);
+    letter-spacing: 0.06em;
+  }
+
+  .hero-pipeline-header__left {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .hero-pipeline-status-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--color-accent-emerald);
+    box-shadow: 0 0 6px var(--color-accent-emerald);
+  }
+
+  .hero-pipeline-bus {
+    color: var(--color-brand-primary);
+    font-weight: 700;
+  }
+
+  .hero-pipeline-track {
+    display: flex;
+    align-items: stretch;
+    justify-content: space-between;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    gap: var(--space-xs);
+  }
+
+  .hero-pipeline-step {
+    display: flex;
+    align-items: center;
+    flex: 1;
+    min-width: 0;
+  }
+
+  .hero-pipeline-card {
+    display: flex;
+    flex-direction: column;
+    padding: var(--space-sm) var(--space-md);
+    background: var(--color-bg-secondary);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    flex: 1;
+    min-width: 0;
+    transition: transform var(--duration-fast) var(--ease-default),
+      border-color var(--duration-fast) var(--ease-default);
+  }
+
+  .hero-pipeline-card:hover {
+    transform: translateY(-2px);
+    border-color: var(--color-brand-primary);
+  }
+
+  .hero-pipeline-card__top {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    margin-bottom: 0.25rem;
+  }
+
+  .hero-pipeline-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  .hero-pipeline-dot--01 {
+    background: var(--color-accent-cyan);
+    box-shadow: 0 0 8px var(--color-accent-cyan);
+  }
+
+  .hero-pipeline-dot--02 {
+    background: var(--color-brand-primary);
+    box-shadow: 0 0 8px var(--color-brand-primary);
+  }
+
+  .hero-pipeline-dot--03 {
+    background: var(--color-accent-amber);
+    box-shadow: 0 0 8px var(--color-accent-amber);
+  }
+
+  .hero-pipeline-dot--04 {
+    background: var(--color-accent-emerald);
+    box-shadow: 0 0 8px var(--color-accent-emerald);
+  }
+
+  .hero-pipeline-dot--05 {
+    background: var(--color-brand-secondary);
+    box-shadow: 0 0 8px var(--color-brand-secondary);
+  }
+
+  .hero-pipeline-code {
+    font-family: var(--font-mono);
+    font-size: 0.625rem;
+    font-weight: 700;
+    color: var(--muted-foreground);
+    letter-spacing: 0.05em;
+  }
+
+  .hero-pipeline-name {
+    font-family: var(--font-heading);
+    font-size: 0.8125rem;
+    font-weight: 700;
+    color: var(--foreground);
+    letter-spacing: 0.02em;
+  }
+
+  .hero-pipeline-detail {
+    font-size: 0.6875rem;
+    color: var(--muted-foreground);
+    line-height: 1.3;
+    margin-top: 0.15rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .hero-pipeline-connector {
+    display: flex;
+    align-items: center;
+    padding: 0 0.35rem;
+    color: var(--border);
+    font-size: 0.875rem;
+    flex-shrink: 0;
+  }
+
+  @media (max-width: 54rem) {
+    .hero-pipeline-track {
+      flex-direction: column;
+      gap: var(--space-xs);
+    }
+    .hero-pipeline-connector {
+      display: none;
+    }
+    .hero-pipeline-detail {
+      white-space: normal;
+    }
+  }
+
+  /* Principles Section (2x2 Grid) */
+  .principles {
+    position: relative;
+    border-bottom: 1px solid var(--border);
+    background: var(--color-bg-secondary);
+  }
+
+  .principles-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: var(--space-xl);
+    margin-top: var(--space-2xl);
+  }
+
+  @media (min-width: 48rem) {
+    .principles-grid {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+
+  .principle-card {
+    display: flex;
+    flex-direction: column;
+    padding: var(--space-xl);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-xl);
+    background: var(--card);
+    box-shadow: var(--shadow-sm);
+    gap: var(--space-md);
+    position: relative;
+    overflow: hidden;
+    transition: transform var(--duration-fast) var(--ease-default),
+      border-color var(--duration-fast) var(--ease-default),
+      box-shadow var(--duration-fast) var(--ease-default);
+  }
+
+  .principle-card[data-code="01"] {
+    --principle-accent: var(--color-accent-emerald);
+  }
+
+  .principle-card[data-code="02"] {
+    --principle-accent: var(--color-brand-primary);
+  }
+
+  .principle-card[data-code="03"] {
+    --principle-accent: var(--color-accent-amber);
+  }
+
+  .principle-card[data-code="04"] {
+    --principle-accent: var(--color-brand-secondary);
+  }
+
+  .principle-card:hover {
+    transform: translateY(-3px);
+    border-color: var(--principle-accent, var(--primary));
+    box-shadow: var(--shadow-md);
+  }
+
+  .principle-card__top-bar {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: var(--principle-accent, var(--color-brand-primary));
+  }
+
+  .principle-card__meta {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: var(--space-sm);
+  }
+
+  .principle-card__code {
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: var(--principle-accent, var(--color-brand-primary));
+    letter-spacing: 0.05em;
+  }
+
+  .principle-card__domain-tag {
+    font-family: var(--font-mono);
+    font-size: 0.625rem;
+    font-weight: 700;
+    padding: 0.2rem 0.5rem;
+    border-radius: var(--radius-full);
+    background: var(--color-bg-secondary);
+    border: 1px solid var(--border);
+    color: var(--muted-foreground);
+    letter-spacing: 0.04em;
+  }
+
+  .principle-card__title {
+    margin: 0.4rem 0 0.15rem;
+    font-size: 1.35rem;
+    font-family: var(--font-heading);
+    font-weight: 700;
+    color: var(--foreground);
+    line-height: 1.25;
+  }
+
+  .principle-card__subsystem {
+    font-family: var(--font-mono);
+    font-size: 0.6875rem;
+    color: var(--muted-foreground);
+    display: block;
+    margin-bottom: var(--space-xs);
+  }
+
+  .principle-card__section-label {
+    display: block;
+    font-family: var(--font-mono);
+    font-size: 0.625rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    color: var(--muted-foreground);
+    margin-bottom: 0.35rem;
+  }
+
+  .principle-card__thesis {
+    padding: var(--space-md);
+    background: var(--color-bg-secondary);
+    border-left: 3px solid var(--principle-accent, var(--color-brand-primary));
+    border-radius: 0 var(--radius-lg) var(--radius-lg) 0;
+  }
+
+  .principle-card__text {
+    margin: 0;
+    font-size: 0.9375rem;
+    color: var(--foreground);
+    line-height: 1.6;
+  }
+
+  .principle-card__consequence {
+    padding-top: var(--space-sm);
+    border-top: 1px dashed var(--border);
+    flex-grow: 1;
+  }
+
+  .principle-card__text--practice {
+    color: var(--muted-foreground);
+    font-size: 0.875rem;
+    line-height: 1.55;
+  }
+
+  .principle-card__footer {
+    display: flex;
+    justify-content: flex-end;
+    padding-top: var(--space-xs);
+  }
+
+  .principle-card__status-indicator {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    font-family: var(--font-mono);
+    font-size: 0.625rem;
+    color: var(--muted-foreground);
+    letter-spacing: 0.05em;
+  }
+
+  .principle-card__status-dot {
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    background: var(--principle-accent, var(--color-brand-primary));
+  }
+
+  /* Ecosystem Section (3-Tier Cards) */
+  .ecosystem-section {
+    position: relative;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .ecosystem-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: var(--space-xl);
+    margin-top: var(--space-2xl);
+  }
+
+  @media (min-width: 48rem) {
+    .ecosystem-grid {
+      grid-template-columns: repeat(3, 1fr);
+    }
+  }
+
+  .ecosystem-card {
+    display: flex;
+    flex-direction: column;
+    padding: var(--space-xl);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-xl);
+    background: var(--card);
+    box-shadow: var(--shadow-sm);
+    position: relative;
+    overflow: hidden;
+    transition: transform var(--duration-fast) var(--ease-default),
+      border-color var(--duration-fast) var(--ease-default),
+      box-shadow var(--duration-fast) var(--ease-default);
+  }
+
+  .ecosystem-card[data-tier="01"] {
+    --tier-accent: var(--color-accent-emerald);
+  }
+
+  .ecosystem-card[data-tier="02"] {
+    --tier-accent: var(--color-brand-primary);
+  }
+
+  .ecosystem-card[data-tier="03"] {
+    --tier-accent: var(--color-accent-amber);
+  }
+
+  .ecosystem-card:hover {
+    transform: translateY(-3px);
+    border-color: var(--tier-accent, var(--primary));
+    box-shadow: var(--shadow-md);
+  }
+
+  .ecosystem-card__top-bar {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: var(--tier-accent, var(--color-brand-primary));
+  }
+
+  .ecosystem-card__meta {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: var(--space-sm);
+  }
+
+  .ecosystem-card__tier {
+    font-family: var(--font-mono);
+    font-size: 0.8125rem;
+    font-weight: 800;
+    color: var(--tier-accent, var(--color-brand-primary));
+    letter-spacing: 0.04em;
+  }
+
+  .ecosystem-card__badge {
+    font-family: var(--font-mono);
+    font-size: 0.6875rem;
+    padding: 0.2rem 0.5rem;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-full);
+    color: var(--muted-foreground);
+    background: var(--color-bg-secondary);
+  }
+
+  .ecosystem-card__title {
+    margin: 0 0 var(--space-xs);
+    font-size: 1.3rem;
+    font-family: var(--font-heading);
+    font-weight: 700;
+    color: var(--foreground);
+  }
+
+  .ecosystem-card__description {
+    margin: 0 0 var(--space-xl);
+    font-size: 0.9375rem;
+    color: var(--muted-foreground);
+    line-height: 1.55;
+    flex-grow: 1;
+  }
+
+  .ecosystem-card__footer {
+    border-top: 1px solid var(--border);
+    padding-top: var(--space-md);
+  }
+
+  .ecosystem-card__link {
+    display: inline-flex;
+    align-items: center;
+    font-family: var(--font-mono);
+    font-size: 0.8125rem;
+    font-weight: 700;
+    color: var(--tier-accent, var(--color-brand-primary));
+    text-decoration: none;
+  }
+
+  .ecosystem-card__link:hover {
+    text-decoration: underline;
+  }
+
+  .ecosystem-card__link:focus-visible {
+    outline: 2px solid var(--ring);
+    outline-offset: 2px;
+  }
+
+  /* Contact Section */
+  .contact-info {
+    position: relative;
+  }
+
+  .contact-card {
+    text-align: center;
+    padding: var(--space-2xl);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-2xl);
+    background: var(--card);
+    box-shadow: var(--shadow-sm);
+    max-width: 44rem;
+    margin: 0 auto;
+  }
+
+  .contact-card__mark {
+    margin-bottom: var(--space-md);
+  }
+
+  .contact-card__title {
+    margin: 0;
+    font-size: 1.85rem;
+    font-family: var(--font-heading);
+    font-weight: 700;
+    color: var(--foreground);
+  }
+
+  .contact-card__lead {
+    margin: var(--space-sm) auto 0;
+    color: var(--muted-foreground);
+    max-width: 30rem;
+    line-height: 1.6;
+  }
+
+  .contact-card__meta {
+    margin-top: var(--space-xl);
+  }
+
+  .contact-card__email {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: var(--space-sm) var(--space-lg);
+    font-family: var(--font-mono);
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: var(--color-brand-primary);
+    background: var(--color-bg-secondary);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-full);
+    text-decoration: none;
+    transition: all var(--duration-fast) var(--ease-default);
+  }
+
+  .contact-card__email:hover {
+    border-color: var(--color-brand-primary);
+    box-shadow: 0 0 12px color-mix(in srgb, var(--color-brand-primary) 20%, transparent);
+    transform: translateY(-1px);
+  }
+
+  .contact-card__email:focus-visible {
+    outline: 2px solid var(--ring);
+    outline-offset: 2px;
+  }
+</style>
+

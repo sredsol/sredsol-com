@@ -1,0 +1,293 @@
+---
+import { cn } from "../../../../lib/cn";
+
+export interface Props {
+  variant?: "waveform" | "dial" | "frequency" | "matrix";
+  label: string;
+  value?: string | number;
+  unit?: string;
+  channel?: string;
+  animated?: boolean;
+  class?: string;
+}
+
+const {
+  variant = "waveform",
+  label,
+  value,
+  unit,
+  channel = "SCOPE-01",
+  animated = true,
+  class: className,
+} = Astro.props as Props;
+---
+
+<div class={cn("scope-gauge", `scope-gauge--${variant}`, className)} role="region" aria-label={`Scope: ${label}`}>
+  <header class="scope-gauge__header">
+    <div class="scope-gauge__channel">
+      <span class="scope-gauge__status-led" aria-hidden="true"></span>
+      <span class="scope-gauge__channel-name">{channel}</span>
+    </div>
+    <span class="scope-gauge__label">{label}</span>
+  </header>
+
+  <div class="scope-gauge__screen" aria-hidden="true">
+    <div class="scope-gauge__grid-overlay"></div>
+
+    {variant === "waveform" && (
+      <svg class="scope-gauge__svg" viewBox="0 0 240 80" preserveAspectRatio="none">
+        <path
+          class={cn("scope-gauge__path", animated && "scope-gauge__path--animated")}
+          d="M 0 40 Q 30 10, 60 40 T 120 40 T 180 40 T 240 40"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+        />
+        <path
+          class="scope-gauge__path-fill"
+          d="M 0 40 Q 30 10, 60 40 T 120 40 T 180 40 T 240 40 L 240 80 L 0 80 Z"
+          fill="color-mix(in srgb, var(--primary) 8%, transparent)"
+        />
+      </svg>
+    )}
+
+    {variant === "dial" && (
+      <svg class="scope-gauge__svg" viewBox="0 0 160 80" preserveAspectRatio="xMidYMid meet">
+        <path
+          d="M 20 70 A 60 60 0 0 1 140 70"
+          fill="none"
+          stroke="var(--border)"
+          stroke-width="8"
+          stroke-linecap="round"
+        />
+        <path
+          class={cn("scope-gauge__dial-arc", animated && "scope-gauge__dial-arc--animated")}
+          d="M 20 70 A 60 60 0 0 1 115 25"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="8"
+          stroke-linecap="round"
+        />
+        <line x1="80" y1="70" x2="110" y2="30" stroke="var(--primary)" stroke-width="2" stroke-linecap="round" />
+      </svg>
+    )}
+
+    {variant === "frequency" && (
+      <svg class="scope-gauge__svg" viewBox="0 0 240 80" preserveAspectRatio="none">
+        {[
+          { x: 10, h: 30 },
+          { x: 30, h: 52 },
+          { x: 50, h: 68 },
+          { x: 70, h: 24 },
+          { x: 90, h: 72 },
+          { x: 110, h: 56 },
+          { x: 130, h: 40 },
+          { x: 150, h: 64 },
+          { x: 170, h: 48 },
+          { x: 190, h: 36 },
+          { x: 210, h: 70 },
+          { x: 230, h: 58 },
+        ].map((bar) => (
+          <rect
+            class={cn("scope-gauge__bar", animated && "scope-gauge__bar--animated")}
+            x={bar.x}
+            y={80 - bar.h}
+            width="12"
+            height={bar.h}
+            rx="2"
+            fill="currentColor"
+          />
+        ))}
+      </svg>
+    )}
+
+    {variant === "matrix" && (
+      <svg class="scope-gauge__svg" viewBox="0 0 160 80" preserveAspectRatio="xMidYMid meet">
+        {Array.from({ length: 16 }).map((_, i) => {
+          const col = i % 4;
+          const row = Math.floor(i / 4);
+          const opacity = ((i * 19) % 80 + 20) / 100;
+          return (
+            <rect
+              class="scope-gauge__cell"
+              x={40 + col * 22}
+              y={10 + row * 16}
+              width="16"
+              height="12"
+              rx="2"
+              fill="currentColor"
+              opacity={opacity}
+            />
+          );
+        })}
+      </svg>
+    )}
+  </div>
+
+  {(value !== undefined || unit) && (
+    <footer class="scope-gauge__footer">
+      <span class="scope-gauge__value">{value}</span>
+      {unit && <span class="scope-gauge__unit">{unit}</span>}
+    </footer>
+  )}
+</div>
+
+
+<style>
+  .scope-gauge {
+    display: flex;
+    flex-direction: column;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    background: var(--card);
+    overflow: hidden;
+    box-shadow: var(--shadow-sm);
+    color: var(--primary);
+  }
+
+  .scope-gauge__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.4rem 0.65rem;
+    border-bottom: 1px solid var(--border);
+    background: var(--color-bg-secondary);
+    font-family: var(--font-mono);
+    font-size: 0.6875rem;
+  }
+
+  .scope-gauge__channel {
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+    color: var(--muted-foreground);
+    font-weight: 700;
+  }
+
+  .scope-gauge__status-led {
+    width: 0.35rem;
+    height: 0.35rem;
+    border-radius: var(--radius-full);
+    background: var(--success);
+    box-shadow: 0 0 4px color-mix(in srgb, var(--success) 60%, transparent);
+  }
+
+  .scope-gauge__label {
+    color: var(--foreground);
+    font-weight: 600;
+    letter-spacing: 0.02em;
+  }
+
+  .scope-gauge__screen {
+    position: relative;
+    height: 5rem;
+    background: color-mix(in srgb, var(--background) 95%, black);
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .scope-gauge__grid-overlay {
+    position: absolute;
+    inset: 0;
+    background-image:
+      linear-gradient(to right, color-mix(in srgb, var(--foreground) 5%, transparent) 1px, transparent 1px),
+      linear-gradient(to bottom, color-mix(in srgb, var(--foreground) 5%, transparent) 1px, transparent 1px);
+    background-size: 16px 16px;
+    pointer-events: none;
+  }
+
+  .scope-gauge__svg {
+    width: 100%;
+    height: 100%;
+    position: relative;
+    z-index: 1;
+  }
+
+  .scope-gauge__path {
+    stroke-dasharray: 200;
+  }
+
+  .scope-gauge__path--animated {
+    animation: waveform-scan 4s linear infinite;
+  }
+
+  .scope-gauge__dial-arc {
+    stroke: var(--primary);
+  }
+
+  .scope-gauge__bars {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 3px;
+    width: 90%;
+    height: 70%;
+    position: relative;
+    z-index: 1;
+  }
+
+  .scope-gauge__bar {
+    flex: 1;
+    background: var(--primary);
+    border-radius: var(--radius-xs) var(--radius-xs) 0 0;
+  }
+
+  .scope-gauge__bar--animated {
+    animation: bar-pulse 1.6s ease-in-out infinite alternate;
+  }
+
+  @keyframes bar-pulse {
+    0% {
+      transform: scaleY(0.4);
+    }
+    100% {
+      transform: scaleY(1);
+    }
+  }
+
+  .scope-gauge__matrix {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 4px;
+    width: 70%;
+    height: 70%;
+    position: relative;
+    z-index: 1;
+  }
+
+  .scope-gauge__cell {
+    background: var(--primary);
+    border-radius: var(--radius-xs);
+  }
+
+  .scope-gauge__footer {
+    display: flex;
+    align-items: baseline;
+    justify-content: flex-end;
+    gap: 0.35rem;
+    padding: 0.35rem 0.65rem;
+    border-top: 1px solid var(--border);
+    background: var(--card);
+    font-family: var(--font-mono);
+  }
+
+  .scope-gauge__value {
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--foreground);
+  }
+
+  .scope-gauge__unit {
+    font-size: 0.6875rem;
+    color: var(--muted-foreground);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .scope-gauge__path--animated,
+    .scope-gauge__bar--animated {
+      animation: none;
+    }
+  }
+</style>

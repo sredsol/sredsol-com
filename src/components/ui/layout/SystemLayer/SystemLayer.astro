@@ -1,0 +1,311 @@
+---
+import { cn } from "../../../../lib/cn";
+import Badge from "../../data-display/Badge/Badge.astro";
+
+export interface Props {
+  step: number;
+  code: string;
+  title: string;
+  domain: "computation" | "physical" | "observation" | "learning";
+  description: string;
+  technologies?: string[];
+  bridgeProtocol?: string;
+  isLast?: boolean;
+  class?: string;
+}
+
+const {
+  step,
+  code,
+  title,
+  domain,
+  description,
+  technologies = [],
+  bridgeProtocol,
+  isLast = false,
+  class: className,
+} = Astro.props as Props;
+
+const domainLabel = {
+  computation: "Computation // 01",
+  physical: "Physical // 02",
+  observation: "Observation // 03",
+  learning: "Learning // 04",
+}[domain];
+---
+
+<div class={cn("system-layer", isLast && "system-layer--last", className)} tabindex="0">
+  <div class="system-layer__track">
+    <div class="system-layer__node" aria-hidden="true">
+      <span class="system-layer__step">{step.toString().padStart(2, "0")}</span>
+    </div>
+    {
+      !isLast && (
+        <div class="system-layer__wire" aria-hidden="true">
+          <div class="system-layer__wire-pulse" />
+          <span class="system-layer__wire-arrow">&darr;</span>
+        </div>
+      )
+    }
+  </div>
+
+  <div class="system-layer__content">
+    <header class="system-layer__header">
+      <div class="system-layer__meta">
+        <div class="system-layer__meta-primary">
+          <span class="system-layer__code">{code}</span>
+          <Badge variant="outline" size="sm">{domainLabel}</Badge>
+        </div>
+        {bridgeProtocol && (
+          <span class="system-layer__bridge-tag">
+            <span class="system-layer__bridge-label">BRIDGE //</span>
+            <span class="system-layer__bridge-val">{bridgeProtocol}</span>
+          </span>
+        )}
+      </div>
+      <h3 class="system-layer__title">{title}</h3>
+    </header>
+
+    <p class="system-layer__description">{description}</p>
+
+    {
+      technologies.length > 0 && (
+        <ul class="system-layer__techs" aria-label="Related technologies">
+          {technologies.map((tech) => (
+            <li class="system-layer__tech">{tech}</li>
+          ))}
+        </ul>
+      )
+    }
+  </div>
+</div>
+
+<style>
+  .system-layer {
+    display: flex;
+    gap: var(--space-lg);
+    position: relative;
+    padding: var(--space-md) var(--space-lg);
+    border-radius: var(--radius-lg);
+    border: 1px solid transparent;
+    transition: all var(--duration-fast) var(--ease-default);
+    outline: none;
+  }
+
+  .system-layer:hover,
+  .system-layer:focus-visible {
+    background: color-mix(in srgb, var(--card) 60%, transparent);
+    border-color: color-mix(in srgb, var(--color-brand-primary) 30%, var(--border));
+    box-shadow: var(--shadow-sm);
+  }
+
+  .system-layer:focus-visible {
+    outline: 2px solid var(--ring);
+    outline-offset: 2px;
+  }
+
+  .system-layer__track {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    flex-shrink: 0;
+  }
+
+  .system-layer__node {
+    display: inline-grid;
+    place-items: center;
+    width: 2.5rem;
+    height: 2.5rem;
+    border-radius: var(--radius-md);
+    background: var(--card);
+    border: 1px solid var(--border);
+    color: var(--foreground);
+    font-family: var(--font-mono);
+    font-weight: 700;
+    font-size: 0.875rem;
+    box-shadow: var(--shadow-sm);
+    z-index: 2;
+    transition: all var(--duration-fast) var(--ease-default);
+  }
+
+  .system-layer:hover .system-layer__node,
+  .system-layer:focus-visible .system-layer__node {
+    border-color: var(--color-brand-primary);
+    background: var(--color-brand-primary);
+    color: var(--primary-foreground);
+    transform: scale(1.06);
+    box-shadow: 0 0 12px color-mix(in srgb, var(--color-brand-primary) 40%, transparent);
+  }
+
+  .system-layer__wire {
+    flex: 1;
+    width: 2px;
+    background: linear-gradient(
+      to bottom,
+      var(--color-brand-primary),
+      var(--border) 40%,
+      color-mix(in srgb, var(--border) 40%, transparent)
+    );
+    margin-block: 0.25rem;
+    min-height: 2.75rem;
+    position: relative;
+    overflow: visible;
+  }
+
+  .system-layer__wire-arrow {
+    position: absolute;
+    bottom: -10px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    color: var(--color-brand-primary);
+    background: var(--background);
+    padding: 0 2px;
+    line-height: 1;
+    z-index: 2;
+  }
+
+  .system-layer__wire-pulse {
+    position: absolute;
+    top: 0;
+    left: -1px;
+    width: 4px;
+    height: 14px;
+    background: var(--color-brand-accent);
+    border-radius: 2px;
+    box-shadow: 0 0 8px var(--color-brand-accent);
+    animation: wirePulse 3.5s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+  }
+
+  @keyframes wirePulse {
+    0% {
+      top: -14px;
+      opacity: 0;
+    }
+    20% {
+      opacity: 1;
+    }
+    80% {
+      opacity: 1;
+    }
+    100% {
+      top: 100%;
+      opacity: 0;
+    }
+  }
+
+  .system-layer__content {
+    flex: 1;
+    padding-bottom: var(--space-md);
+  }
+
+  .system-layer--last .system-layer__content {
+    padding-bottom: 0;
+  }
+
+  .system-layer__header {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+  }
+
+  .system-layer__meta {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+
+  .system-layer__meta-primary {
+    display: flex;
+    align-items: center;
+    flex-wrap: nowrap;
+    gap: 0.5rem;
+    white-space: nowrap;
+  }
+
+  .system-layer__code {
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    color: var(--muted-foreground);
+    letter-spacing: 0.05em;
+    white-space: nowrap;
+  }
+
+  .system-layer__bridge-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    font-family: var(--font-mono);
+    font-size: 0.6875rem;
+    color: var(--muted-foreground);
+    background: color-mix(in srgb, var(--foreground) 5%, transparent);
+    padding: 0.12rem 0.5rem;
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--border);
+    white-space: nowrap;
+  }
+
+  .system-layer__bridge-label {
+    color: var(--muted-foreground);
+    font-weight: var(--font-weight-bold);
+  }
+
+  .system-layer__bridge-val {
+    color: var(--color-brand-primary);
+  }
+
+  .system-layer__title {
+    margin: 0;
+    font-size: clamp(1.125rem, 2vw, 1.35rem);
+    font-family: var(--font-heading);
+    font-weight: 700;
+    color: var(--foreground);
+    letter-spacing: -0.01em;
+  }
+
+  .system-layer__description {
+    margin: 0.5rem 0 0;
+    color: var(--muted-foreground);
+    font-size: 0.9375rem;
+    line-height: 1.6;
+    max-width: 44rem;
+  }
+
+  .system-layer__techs {
+    list-style: none;
+    margin: 0.75rem 0 0;
+    padding: 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+  }
+
+  .system-layer__tech {
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    padding: 0.15rem 0.5rem;
+    border-radius: var(--radius-sm);
+    background: var(--muted);
+    color: var(--foreground);
+    border: 1px solid var(--border);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .system-layer__node {
+      transition: none;
+    }
+
+    .system-layer:hover .system-layer__node,
+    .system-layer:focus-visible .system-layer__node {
+      transform: none;
+    }
+
+    .system-layer__wire-pulse {
+      animation: none;
+      display: none;
+    }
+  }
+</style>

@@ -1,0 +1,125 @@
+---
+import { cn } from "../../../../lib/cn";
+
+export interface Props {
+  protocol?: string;
+  status?: "operational" | "streaming" | "calibrating" | "lab" | "offline";
+  latency?: string;
+  variant?: "pill" | "terminal" | "minimal";
+  class?: string;
+}
+
+const {
+  protocol,
+  status = "operational",
+  latency,
+  variant = "pill",
+  class: className,
+} = Astro.props as Props;
+
+const statusDotClass = {
+  operational: "signal-badge__dot--operational",
+  streaming: "signal-badge__dot--streaming",
+  calibrating: "signal-badge__dot--calibrating",
+  lab: "signal-badge__dot--lab",
+  offline: "signal-badge__dot--offline",
+}[status];
+
+const statusText = {
+  operational: "OPERATIONAL",
+  streaming: "LIVE STREAM",
+  calibrating: "CALIBRATING",
+  lab: "LAB EXPERIMENT",
+  offline: "STANDBY",
+}[status];
+---
+
+<div class={cn("signal-badge", `signal-badge--${variant}`, className)}>
+  <span class={cn("signal-badge__dot", statusDotClass)} aria-hidden="true"></span>
+  {protocol && <span class="signal-badge__protocol">[{protocol}]</span>}
+  <span class="signal-badge__status">{statusText}</span>
+  {latency && <span class="signal-badge__latency">// {latency}</span>}
+</div>
+
+<style>
+  .signal-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    padding: 0.25rem 0.65rem;
+    border-radius: var(--radius-full);
+    border: 1px solid var(--border);
+    background: var(--color-bg-secondary);
+    color: var(--foreground);
+    font-family: var(--font-mono);
+    font-size: 0.6875rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    line-height: 1;
+    box-shadow: var(--shadow-sm);
+  }
+
+  .signal-badge--terminal {
+    border-radius: var(--radius-xs);
+    background: color-mix(in srgb, var(--card) 90%, transparent);
+    border-left: 2px solid var(--primary);
+  }
+
+  .signal-badge--minimal {
+    border: none;
+    background: transparent;
+    padding: 0;
+    box-shadow: none;
+  }
+
+  .signal-badge__dot {
+    width: 0.4rem;
+    height: 0.4rem;
+    border-radius: var(--radius-full);
+    flex-shrink: 0;
+  }
+
+  .signal-badge__dot--operational {
+    background: var(--success);
+    box-shadow: 0 0 6px color-mix(in srgb, var(--success) 60%, transparent);
+  }
+
+  .signal-badge__dot--streaming {
+    background: var(--info);
+    box-shadow: 0 0 6px color-mix(in srgb, var(--info) 60%, transparent);
+    animation: telemetry-pulse 1.8s infinite ease-in-out;
+  }
+
+  .signal-badge__dot--calibrating {
+    background: var(--warning);
+    animation: telemetry-pulse 1.2s infinite ease-in-out;
+  }
+
+  .signal-badge__dot--lab {
+    background: var(--warning);
+    box-shadow: 0 0 4px color-mix(in srgb, var(--warning) 50%, transparent);
+  }
+
+  .signal-badge__dot--offline {
+    background: var(--muted-foreground);
+  }
+
+  .signal-badge__protocol {
+    color: var(--color-text-secondary);
+  }
+
+  .signal-badge__status {
+    color: var(--foreground);
+  }
+
+  .signal-badge__latency {
+    color: var(--muted-foreground);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .signal-badge__dot--streaming,
+    .signal-badge__dot--calibrating {
+      animation: none;
+    }
+  }
+</style>

@@ -1,0 +1,78 @@
+---
+import MarketingLayout from "../layouts/MarketingLayout.astro";
+import { GridBackground } from "../components/ui/layout";
+import { NodeIndicator } from "../components/ui/data-display";
+import { ExplorationsGrid, LabCTA } from "../components/sections";
+import { siteConfig } from "../config/site.config";
+
+const locale = (Astro.currentLocale || "en") as "en";
+---
+
+<MarketingLayout
+  title={`Explorations — ${siteConfig.name}`}
+  description="Directory of computational studios, interactive instruments, and cognitive environments built by SREDSOL."
+  locale={locale}
+  path="/explorations"
+>
+  <!-- Page Header -->
+  <section class="page-header py-16">
+    <GridBackground
+      variant="crosshairs"
+      glow
+      glowPosition="top"
+      mask="radial"
+    />
+    <div class="container">
+      <div class="page-header__meta">
+        <NodeIndicator
+          label="DIRECTORY // STUDIOS & INSTRUMENTS"
+          code="DIR-01"
+          status="streaming"
+          size="sm"
+        />
+      </div>
+      <h1 class="page-header__title">Computational Explorations</h1>
+      <p class="page-header__lead">
+        Explore interactive sandboxes, real-time sensor streams, and cognitive
+        tools built to transform abstract principles into experiential
+        environments.
+      </p>
+    </div>
+  </section>
+
+  <!-- Full Explorations Grid -->
+  <ExplorationsGrid showHeader={false} showViewAll={false} locale={locale} />
+
+  <LabCTA locale={locale} />
+</MarketingLayout>
+
+<style>
+  .page-header {
+    position: relative;
+    border-bottom: 1px solid var(--border);
+    text-align: center;
+  }
+
+  .page-header__meta {
+    display: flex;
+    justify-content: center;
+    margin-bottom: var(--space-md);
+  }
+
+  .page-header__title {
+    margin: 0;
+    font-size: clamp(2rem, 4.5vw, 3.5rem);
+    font-family: var(--font-heading);
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    color: var(--foreground);
+  }
+
+  .page-header__lead {
+    margin: var(--space-md) auto 0;
+    font-size: clamp(1rem, 1.5vw, 1.15rem);
+    color: var(--muted-foreground);
+    line-height: 1.6;
+    max-width: 38rem;
+  }
+</style>

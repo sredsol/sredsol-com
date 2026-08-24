@@ -1,0 +1,344 @@
+---
+import { SignalBadge } from "../ui/data-display";
+
+export interface Props {
+  class?: string;
+  initialFreq?: number;
+  initialAmp?: number;
+}
+
+const { class: className, initialFreq = 440, initialAmp = 3.3 } = Astro.props as Props;
+---
+
+<div class={`instrument-scope ${className || ""}`} data-instrument-scope>
+  <!-- Scope Header -->
+  <div class="scope-header">
+    <div class="scope-header__left">
+      <span class="scope-header__tag">SCOPE // CH-A</span>
+      <SignalBadge protocol="I2C" status="operational" latency="0.4ms" variant="terminal" />
+    </div>
+
+    <div class="scope-header__right">
+      <span class="scope-telemetry-val" data-metric="freq">440.0 Hz</span>
+      <span class="scope-telemetry-sep">|</span>
+      <span class="scope-telemetry-val" data-metric="vpp">3.30 Vpp</span>
+    </div>
+  </div>
+
+  <!-- Scope Display Screen -->
+  <div class="scope-screen">
+    <canvas class="scope-canvas"></canvas>
+    <div class="scope-reticle"></div>
+  </div>
+
+  <!-- Scope Controls Bench -->
+  <div class="scope-controls">
+    <div class="scope-ctrl-group">
+      <label class="scope-ctrl-label" for="freq-slider">FREQUENCY (Hz)</label>
+      <input
+        type="range"
+        id="freq-slider"
+        class="scope-range"
+        min="100"
+        max="2000"
+        step="10"
+        value={initialFreq}
+        data-control="freq"
+      />
+    </div>
+
+    <div class="scope-ctrl-group">
+      <label class="scope-ctrl-label" for="amp-slider">AMPLITUDE (V)</label>
+      <input
+        type="range"
+        id="amp-slider"
+        class="scope-range"
+        min="0.5"
+        max="5.0"
+        step="0.1"
+        value={initialAmp}
+        data-control="amp"
+      />
+    </div>
+
+    <div class="scope-ctrl-group">
+      <span class="scope-ctrl-label">FUNCTION</span>
+      <div class="scope-mode-selector">
+        <button type="button" class="mode-btn active" data-mode="sine">SINE</button>
+        <button type="button" class="mode-btn" data-mode="square">SQR</button>
+        <button type="button" class="mode-btn" data-mode="triangle">TRI</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  function getThemeColors() {
+    const root = document.documentElement;
+    const style = getComputedStyle(root);
+    const isDark = root.classList.contains("dark");
+
+    return {
+      brand: style.getPropertyValue("--color-brand-primary").trim() || (isDark ? "#5b73ff" : "#3042e6"),
+      accent: style.getPropertyValue("--color-brand-accent").trim() || "#00e5ff",
+      foreground: style.getPropertyValue("--foreground").trim() || (isDark ? "#f0f4fc" : "#0f172a"),
+      isDark,
+    };
+  }
+
+  function initInstrumentScope() {
+    const scopes = document.querySelectorAll<HTMLElement>("[data-instrument-scope]");
+
+    scopes.forEach((scope) => {
+      if (scope.dataset.initialized) return;
+      scope.dataset.initialized = "true";
+
+      const canvas = scope.querySelector<HTMLCanvasElement>(".scope-canvas");
+      if (!canvas) return;
+
+      const rawCtx = canvas.getContext("2d");
+      if (!rawCtx) return;
+      const ctx: CanvasRenderingContext2D = rawCtx;
+      const renderCanvas: HTMLCanvasElement = canvas;
+
+      const freqSlider = scope.querySelector<HTMLInputElement>('[data-control="freq"]');
+      const ampSlider = scope.querySelector<HTMLInputElement>('[data-control="amp"]');
+      const modeButtons = scope.querySelectorAll<HTMLButtonElement>("[data-mode]");
+      const freqLabel = scope.querySelector<HTMLElement>('[data-metric="freq"]');
+      const vppLabel = scope.querySelector<HTMLElement>('[data-metric="vpp"]');
+
+      let freq = freqSlider ? parseFloat(freqSlider.value) : 440;
+      let amp = ampSlider ? parseFloat(ampSlider.value) : 3.3;
+      let mode: "sine" | "square" | "triangle" = "sine";
+      let phase = 0;
+
+      function updateMetrics() {
+        if (freqLabel) freqLabel.textContent = `${freq.toFixed(1)} Hz`;
+        if (vppLabel) vppLabel.textContent = `${amp.toFixed(2)} Vpp`;
+      }
+
+      freqSlider?.addEventListener("input", (e) => {
+        freq = parseFloat((e.target as HTMLInputElement).value);
+        updateMetrics();
+      });
+
+      ampSlider?.addEventListener("input", (e) => {
+        amp = parseFloat((e.target as HTMLInputElement).value);
+        updateMetrics();
+      });
+
+      modeButtons.forEach((btn) => {
+        btn.addEventListener("click", () => {
+          modeButtons.forEach((b) => b.classList.remove("active"));
+          btn.classList.add("active");
+          mode = (btn.dataset.mode as "sine" | "square" | "triangle") || "sine";
+        });
+      });
+
+      function resize() {
+        const rect = renderCanvas.getBoundingClientRect();
+        const dpr = Math.min(window.devicePixelRatio || 1, 2);
+        renderCanvas.width = rect.width * dpr;
+        renderCanvas.height = rect.height * dpr;
+        ctx.scale(dpr, dpr);
+      }
+
+      window.addEventListener("resize", resize, { passive: true });
+      resize();
+
+      function render() {
+        const rect = renderCanvas.getBoundingClientRect();
+        const width = rect.width;
+        const height = rect.height;
+        const midY = height / 2;
+
+        ctx.clearRect(0, 0, width, height);
+
+        const colors = getThemeColors();
+
+        // Draw coordinate reticle grid
+        ctx.strokeStyle = "rgba(255, 255, 255, 0.08)";
+        ctx.lineWidth = 1;
+        const gridSize = 20;
+
+        for (let x = 0; x < width; x += gridSize) {
+          ctx.beginPath();
+          ctx.moveTo(x, 0);
+          ctx.lineTo(x, height);
+          ctx.stroke();
+        }
+
+        for (let y = 0; y < height; y += gridSize) {
+          ctx.beginPath();
+          ctx.moveTo(0, y);
+          ctx.lineTo(width, y);
+          ctx.stroke();
+        }
+
+        // Draw center crosshair lines
+        ctx.strokeStyle = "rgba(255, 255, 255, 0.15)";
+        ctx.beginPath();
+        ctx.moveTo(0, midY);
+        ctx.lineTo(width, midY);
+        ctx.moveTo(width / 2, 0);
+        ctx.lineTo(width / 2, height);
+        ctx.stroke();
+
+        // Draw waveform trace with glowing neon stroke
+        ctx.strokeStyle = colors.accent;
+        ctx.lineWidth = 2.5;
+        ctx.shadowColor = colors.accent;
+        ctx.shadowBlur = 12;
+        ctx.beginPath();
+
+        const cycles = freq / 80;
+        const scaleAmp = (amp / 5) * (height * 0.38);
+
+        for (let x = 0; x < width; x++) {
+          const t = (x / width) * cycles * Math.PI * 2 + phase;
+          let y = midY;
+
+          if (mode === "sine") {
+            y = midY - Math.sin(t) * scaleAmp;
+          } else if (mode === "square") {
+            y = midY - Math.sign(Math.sin(t)) * scaleAmp;
+          } else if (mode === "triangle") {
+            y = midY - Math.asin(Math.sin(t)) * (2 / Math.PI) * scaleAmp;
+          }
+
+          if (x === 0) ctx.moveTo(x, y);
+          else ctx.lineTo(x, y);
+        }
+
+        ctx.stroke();
+        ctx.shadowBlur = 0;
+
+        phase += 0.05;
+        requestAnimationFrame(render);
+      }
+
+      render();
+    });
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", initInstrumentScope);
+  } else {
+    initInstrumentScope();
+  }
+  document.addEventListener("astro:page-load", initInstrumentScope);
+</script>
+
+<style>
+  .instrument-scope {
+    border: 1px solid var(--border);
+    border-radius: var(--radius-xl);
+    background: var(--card);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    box-shadow: var(--shadow-md);
+  }
+
+  .scope-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: var(--space-sm) var(--space-md);
+    background: var(--color-bg-secondary);
+    border-bottom: 1px solid var(--border);
+  }
+
+  .scope-header__left {
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+  }
+
+  .scope-header__tag {
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: var(--muted-foreground);
+    letter-spacing: 0.05em;
+  }
+
+  .scope-header__right {
+    display: flex;
+    align-items: center;
+    gap: var(--space-xs);
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    color: var(--color-brand-primary);
+  }
+
+  .scope-telemetry-sep {
+    color: var(--border);
+  }
+
+  .scope-screen {
+    position: relative;
+    height: 14rem;
+    background: radial-gradient(ellipse at 50% 50%, #111a2e 0%, #060a14 100%);
+    overflow: hidden;
+  }
+
+  .scope-canvas {
+    display: block;
+    width: 100%;
+    height: 100%;
+  }
+
+  .scope-controls {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(10rem, 1fr));
+    gap: var(--space-md);
+    padding: var(--space-md);
+    border-top: 1px solid var(--border);
+    background: var(--card);
+  }
+
+  .scope-ctrl-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+  }
+
+  .scope-ctrl-label {
+    font-family: var(--font-mono);
+    font-size: 0.6875rem;
+    font-weight: 600;
+    color: var(--muted-foreground);
+    letter-spacing: 0.05em;
+  }
+
+  .scope-range {
+    width: 100%;
+    accent-color: var(--color-brand-primary);
+  }
+
+  .scope-mode-selector {
+    display: flex;
+    gap: 0.25rem;
+  }
+
+  .mode-btn {
+    flex: 1;
+    padding: 0.25rem 0.5rem;
+    font-family: var(--font-mono);
+    font-size: 0.6875rem;
+    font-weight: 700;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    background: var(--color-bg-secondary);
+    color: var(--muted-foreground);
+    cursor: pointer;
+    transition: all var(--duration-fast) var(--ease-default);
+  }
+
+  .mode-btn.active {
+    background: var(--color-brand-primary);
+    color: var(--color-canvas-light, #ffffff);
+    border-color: var(--color-brand-primary);
+  }
+</style>

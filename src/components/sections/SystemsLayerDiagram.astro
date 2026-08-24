@@ -1,0 +1,145 @@
+---
+import { cn } from "../../lib/cn";
+import { SystemLayer } from "../ui/layout";
+
+export interface Props {
+  locale?: string;
+  class?: string;
+}
+
+const { class: className } = Astro.props as Props;
+
+const layers = [
+  {
+    step: 1,
+    code: "01 // MATHEMATICS",
+    domain: "computation" as const,
+    title: "Continuous & Discrete Mathematics",
+    bridgeProtocol: "Symbolic Equations → Linear Systems",
+    description:
+      "Mathematical formalisms, dynamical systems, linear transformations, and topological equations that establish foundational computational truth.",
+    technologies: ["Linear Algebra", "Differential Geometry", "Graph Theory"],
+  },
+  {
+    step: 2,
+    code: "02 // COMPUTATION",
+    domain: "computation" as const,
+    title: "High-Performance Execution Kernels",
+    bridgeProtocol: "Compiled WASM → Vector Memory",
+    description:
+      "Compiling mathematical models into WebAssembly, Rust SIMD vectorizers, and parallel pipelines for sub-millisecond real-time execution.",
+    technologies: ["WebAssembly", "Rust", "SIMD", "State Machines"],
+  },
+  {
+    step: 3,
+    code: "03 // REACTIVE INTERFACES",
+    domain: "learning" as const,
+    title: "Spatial & Direct Manipulation Instruments",
+    bridgeProtocol: "Shader Framebuffer → DOM Scope",
+    description:
+      "Real-time canvas renderers, waveform scopes, and visual grammars that turn abstract mathematical equations into touchable, explorable models.",
+    technologies: ["WebGL / WebGPU", "Canvas API", "Reactive Signals"],
+  },
+  {
+    step: 4,
+    code: "04 // PHYSICAL SYSTEMS",
+    domain: "physical" as const,
+    title: "Hardware Telemetry & Sensor Bridges",
+    bridgeProtocol: "UART / Packet Frame → Serial Bus",
+    description:
+      "Bridging digital simulation to physical reality via embedded microcontrollers, I2C/SPI bus protocols, and hardware peripheral actuators.",
+    technologies: ["I2C / SPI", "WebSerial", "MicroPython", "Embedded C++"],
+  },
+  {
+    step: 5,
+    code: "05 // OBSERVATION",
+    domain: "observation" as const,
+    title: "Empirical Telemetry & Multi-Spectral Streams",
+    bridgeProtocol: "Raw Spectral Feed → Time-Series Grid",
+    description:
+      "Ingesting live sensor feeds, environmental telemetry, and experimental measurements to measure physical reality against theoretical models.",
+    technologies: ["Time-Series", "GIS / OxiGeo", "Spectral FFT"],
+  },
+  {
+    step: 6,
+    code: "06 // SYNTHESIS",
+    domain: "computation" as const,
+    title: "Parameter Estimation & Feedback Modeling",
+    bridgeProtocol: "Empirical Measurement → Model Calibration",
+    description:
+      "Closing the loop between mathematical hypothesis and real-world observation through continuous calibration, Kalman filtering, and error reduction.",
+    technologies: ["Parameter Estimation", "Kalman Filters", "Feedback Loops"],
+  },
+  {
+    step: 7,
+    code: "07 // LEARNINGOS",
+    domain: "learning" as const,
+    title: "Cognitive Synthesis & LearningOS",
+    bridgeProtocol: "Interactive Artifact → Mental Model",
+    description:
+      "Unifying computation, observation, and direct manipulation into persistent mental models within LearningOS — our explorable cognitive workspace.",
+    technologies: ["LearningOS", "Local SQLite", "Explorable Explanations"],
+    isLast: true,
+  },
+];
+---
+
+<section class={cn("systems-layer-section py-20", className)} id="architecture">
+  <div class="container">
+    <header class="section-head">
+      <p class="section-head__eyebrow">THE ARCHITECTURE</p>
+      <h2 class="section-head__title">From Mathematics to Empirical Understanding</h2>
+      <p class="section-head__lead">
+        SREDSOL builds a vertical stack connecting foundational mathematics, hardware telemetry, and cognitive exploration.
+      </p>
+    </header>
+
+    <div class="systems-layer-wrapper">
+      <div class="systems-layer-stack">
+        {
+          layers.map((layer) => (
+            <SystemLayer
+              step={layer.step}
+              code={layer.code}
+              domain={layer.domain}
+              title={layer.title}
+              bridgeProtocol={layer.bridgeProtocol}
+              description={layer.description}
+              technologies={layer.technologies}
+              isLast={layer.isLast}
+            />
+          ))
+        }
+      </div>
+    </div>
+  </div>
+</section>
+
+<style>
+  .systems-layer-section {
+    position: relative;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .systems-layer-wrapper {
+    display: flex;
+    justify-content: center;
+    margin-top: var(--space-2xl);
+  }
+
+  .systems-layer-stack {
+    width: 100%;
+    max-width: 52rem;
+    padding: var(--space-xl);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-2xl);
+    background: var(--card);
+    box-shadow: var(--shadow-sm);
+  }
+
+  @media (max-width: 40rem) {
+    .systems-layer-stack {
+      padding: var(--space-md);
+    }
+  }
+</style>

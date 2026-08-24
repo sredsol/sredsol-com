@@ -1,0 +1,212 @@
+---
+import { cn } from "../../lib/cn";
+import { Button } from "../ui/form";
+import { GridBackground } from "../ui/layout";
+import { NodeIndicator, SignalBadge } from "../ui/data-display";
+import { NodeCanvas } from "../interactive";
+
+export interface Props {
+  locale?: string;
+  class?: string;
+}
+
+const { class: className } = Astro.props as Props;
+---
+
+<section class={cn("hero-node-field", className)}>
+  <!-- Spatial Background Grid & Radial Glow -->
+  <GridBackground variant="crosshairs" glow glowPosition="top" mask="radial" />
+
+  <!-- Interactive Pointer-Reactive Background Canvas with 4 Domain Hubs -->
+  <div class="hero-node-field__canvas-layer" aria-hidden="true">
+    <NodeCanvas nodeCount={38} />
+  </div>
+
+  <!-- Elevated Foreground Content Stage -->
+  <div class="hero-node-field__inner container">
+    <div class="hero-node-field__header">
+      <div class="hero-node-field__eyebrow">
+        <NodeIndicator
+          label="00 // KERNEL COMPUTATIONAL CORE"
+          code="SYS-2026"
+          status="streaming"
+          size="sm"
+        />
+      </div>
+
+      <h1 class="hero-node-field__title">
+        We build systems that make <span class="hero-node-field__highlight">exploration possible<svg class="hero-node-field__arc" viewBox="0 0 240 18" width="100%" height="12" preserveAspectRatio="none" aria-hidden="true"><path d="M4 12 C70 3 170 3 236 10" stroke="var(--color-brand-primary)" stroke-width="3" fill="none" stroke-linecap="round" opacity="0.85"></path></svg></span>.
+      </h1>
+
+      <p class="hero-node-field__lead">
+        Computational environments, interactive instruments, and intelligent tools for learning, observation, and creation.
+      </p>
+
+      <div class="hero-node-field__actions">
+        <Button variant="primary" size="lg" href="/explorations">
+          <span>Explore Systems</span>
+          <span class="hero-node-field__arrow" aria-hidden="true">&rarr;</span>
+        </Button>
+        <Button variant="secondary" size="lg" href="/lab">
+          <span>[ ↗ Enter Lab ]</span>
+        </Button>
+      </div>
+    </div>
+
+    <!-- Integrated Real-time Telemetry Bar -->
+    <div class="hero-node-field__telemetry">
+      <div class="hero-node-field__signals">
+        <SignalBadge protocol="I2C" status="operational" />
+        <SignalBadge protocol="WEBSOCKET" status="streaming" latency="12ms" />
+        <SignalBadge protocol="WASM" status="operational" />
+      </div>
+      <div class="hero-node-field__state">
+        <span class="hero-node-field__state-text">// 4 EXPLORATION CLUSTERS MOUNTED</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<style>
+  .hero-node-field {
+    position: relative;
+    min-height: calc(88vh - var(--header-height, 4rem));
+    padding-top: clamp(4rem, 9vw, 6.5rem);
+    padding-bottom: clamp(2.5rem, 5vw, 4rem);
+    overflow: hidden;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .hero-node-field__canvas-layer {
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    pointer-events: auto;
+    opacity: 0.95;
+  }
+
+  .hero-node-field__inner {
+    position: relative;
+    z-index: 2;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: clamp(2rem, 5vw, 3.5rem);
+    pointer-events: none;
+    width: 100%;
+  }
+
+  .hero-node-field__header {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    max-width: 52rem;
+  }
+
+  .hero-node-field__eyebrow {
+    margin-bottom: var(--space-lg);
+    pointer-events: auto;
+  }
+
+  .hero-node-field__title {
+    margin: 0;
+    font-size: clamp(2.35rem, 5.5vw, 4.5rem);
+    font-family: var(--font-heading);
+    font-weight: 800;
+    line-height: 1.07;
+    letter-spacing: -0.035em;
+    color: var(--foreground);
+  }
+
+  .hero-node-field__highlight {
+    position: relative;
+    display: inline-block;
+    color: var(--foreground);
+    white-space: nowrap;
+  }
+
+  .hero-node-field__arc {
+    position: absolute;
+    bottom: -6px;
+    left: 0;
+    width: 100%;
+    pointer-events: none;
+  }
+
+
+  .hero-node-field__lead {
+    margin: var(--space-xl) 0 0;
+    font-size: clamp(1.05rem, 2vw, 1.25rem);
+    color: var(--muted-foreground);
+    line-height: 1.6;
+    max-width: 40rem;
+  }
+
+  .hero-node-field__actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-md);
+    margin-top: var(--space-2xl);
+    pointer-events: auto;
+  }
+
+  .hero-node-field__arrow {
+    display: inline-block;
+    transition: transform 0.15s ease;
+  }
+
+  .hero-node-field__actions a:hover .hero-node-field__arrow {
+    transform: translateX(4px);
+  }
+
+  /* Telemetry Footer Bar */
+  .hero-node-field__telemetry {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-md);
+    width: 100%;
+    max-width: 46rem;
+    padding: 0.45rem 1rem;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-full);
+    background: color-mix(in srgb, var(--card) 85%, transparent);
+    backdrop-filter: blur(12px);
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    pointer-events: auto;
+    box-shadow: var(--shadow-sm);
+  }
+
+  .hero-node-field__signals {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+
+  .hero-node-field__state-text {
+    color: var(--muted-foreground);
+    font-size: 0.6875rem;
+    letter-spacing: 0.05em;
+  }
+
+  @media (max-width: 48rem) {
+    .hero-node-field__telemetry {
+      justify-content: center;
+      border-radius: var(--radius-lg);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .hero-node-field__arrow {
+      transition: none;
+    }
+  }
+</style>

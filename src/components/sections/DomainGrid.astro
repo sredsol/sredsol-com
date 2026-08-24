@@ -1,0 +1,267 @@
+---
+import { cn } from "../../lib/cn";
+import { NodeIndicator, ScopeGauge } from "../ui/data-display";
+
+export interface Props {
+  locale?: string;
+  class?: string;
+}
+
+const { class: className } = Astro.props as Props;
+
+const domains = [
+  {
+    code: "01 // COMP",
+    title: "Computation",
+    actionSubtitle: "Model · Simulate · Calculate",
+    domain: "computation" as const,
+    description:
+      "Mathematical formalisms, dynamic numerical simulation, spatial geometry, and high-performance algorithmic execution kernels.",
+    scopeVariant: "waveform" as const,
+    scopeLabel: "Kernel Latency",
+    scopeValue: "0.42",
+    scopeUnit: "ms",
+    technologies: ["WASM", "Discrete Geometry", "Linear Algebra", "Simulation"],
+    href: "/explorations/oxigeo",
+  },
+  {
+    code: "02 // PHYS",
+    title: "Physical Systems",
+    actionSubtitle: "Build · Connect · Control",
+    domain: "physical" as const,
+    description:
+      "Interactive circuits, embedded microcontrollers, sensor buses, actuator drivers, and hardware-software bridges.",
+    scopeVariant: "frequency" as const,
+    scopeLabel: "I2C / SPI Bus",
+    scopeValue: "400",
+    scopeUnit: "kHz",
+    technologies: ["MicroPython", "Embedded C", "UART / I2C", "Robotics"],
+    href: "/explorations/physical-computing",
+  },
+  {
+    code: "03 // OBS",
+    title: "Observation",
+    actionSubtitle: "Measure · Visualize · Interpret",
+    domain: "observation" as const,
+    description:
+      "Scientific telemetry instruments, spatial time-series analysis, astronomical capture, and multi-spectral sensors.",
+    scopeVariant: "matrix" as const,
+    scopeLabel: "Telemetry Grid",
+    scopeValue: "16/16",
+    scopeUnit: "CH",
+    technologies: ["Time-Series", "GIS / OxiGeo", "Spectrometry", "Sensors"],
+    href: "/explorations/observation-studio",
+  },
+  {
+    code: "04 // LEARN",
+    title: "Learning",
+    actionSubtitle: "Explore · Construct · Reflect",
+    domain: "learning" as const,
+    description:
+      "Constructivist cognitive workbenches, interactive concept modeling, exploratory discovery, and LearningOS.",
+    scopeVariant: "dial" as const,
+    scopeLabel: "Cognitive Load",
+    scopeValue: "OPTIMAL",
+    scopeUnit: "",
+    technologies: ["LearningOS", "Explorable Explanations", "Local State"],
+    href: "/explorations/learning-os",
+  },
+];
+---
+
+<section class={cn("domain-grid-section py-20", className)} id="domains">
+  <div class="container">
+    <header class="section-head">
+      <p class="section-head__eyebrow">WHAT WE EXPLORE</p>
+      <h2 class="section-head__title">Four Pillars of Computational Exploration</h2>
+      <p class="section-head__lead">
+        We bridge abstract mathematics and physical hardware into unified cognitive environments.
+      </p>
+    </header>
+
+    <div class="domain-grid">
+      {
+        domains.map((item) => (
+          <article class="domain-card">
+            <header class="domain-card__header">
+              <div class="domain-card__meta">
+                <NodeIndicator
+                  label={item.title}
+                  code={item.code}
+                  domain={item.domain}
+                  status="active"
+                  size="sm"
+                />
+              </div>
+              <h3 class="domain-card__title">{item.title}</h3>
+              <p class="domain-card__subtitle">{item.actionSubtitle}</p>
+            </header>
+
+            <p class="domain-card__description">{item.description}</p>
+
+            <div class="domain-card__scope">
+              <ScopeGauge
+                variant={item.scopeVariant}
+                channel={item.code.split(" // ")[0]}
+                label={item.scopeLabel}
+                value={item.scopeValue}
+                unit={item.scopeUnit}
+              />
+            </div>
+
+            <footer class="domain-card__footer">
+              <ul class="domain-card__techs" aria-label="Technologies">
+                {item.technologies.map((tech) => (
+                  <li class="domain-card__tech">{tech}</li>
+                ))}
+              </ul>
+              <a href={item.href} class="domain-card__action">
+                <span>Inspect domain</span>
+                <span class="domain-card__arrow" aria-hidden="true">&rarr;</span>
+              </a>
+            </footer>
+          </article>
+        ))
+      }
+    </div>
+  </div>
+</section>
+
+<style>
+  .domain-grid-section {
+    position: relative;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .domain-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: var(--space-xl);
+    margin-top: var(--space-2xl);
+  }
+
+  @media (min-width: 44rem) {
+    .domain-grid {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+
+  @media (min-width: 76rem) {
+    .domain-grid {
+      grid-template-columns: repeat(4, 1fr);
+    }
+  }
+
+
+  .domain-card {
+    display: flex;
+    flex-direction: column;
+    padding: var(--space-lg);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-xl);
+    background: var(--card);
+    box-shadow: var(--shadow-sm);
+    transition: all var(--duration-fast) var(--ease-default);
+  }
+
+  .domain-card:hover {
+    border-color: var(--primary);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+  }
+
+  .domain-card__header {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+  }
+
+  .domain-card__title {
+    margin: 0;
+    font-size: 1.25rem;
+    font-family: var(--font-heading);
+    font-weight: 700;
+    color: var(--foreground);
+  }
+
+  .domain-card__subtitle {
+    margin: 0;
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: var(--color-brand-primary);
+    letter-spacing: 0.02em;
+  }
+
+  .domain-card__description {
+    margin: 0.5rem 0 0;
+    font-size: 0.875rem;
+    color: var(--muted-foreground);
+    line-height: 1.6;
+    flex: 1;
+  }
+
+  .domain-card__scope {
+    margin: var(--space-lg) 0;
+  }
+
+  .domain-card__footer {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-md);
+    padding-top: var(--space-md);
+    border-top: 1px solid var(--border);
+  }
+
+  .domain-card__techs {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.35rem;
+  }
+
+  .domain-card__tech {
+    font-family: var(--font-mono);
+    font-size: 0.6875rem;
+    padding: 0.15rem 0.45rem;
+    border-radius: var(--radius-sm);
+    background: var(--muted);
+    color: var(--foreground);
+    border: 1px solid var(--border);
+  }
+
+  .domain-card__action {
+    display: inline-flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 0.35rem;
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: var(--foreground);
+    text-decoration: none;
+    transition: color var(--duration-fast) var(--ease-default);
+  }
+
+  .domain-card__action:hover {
+    color: var(--color-brand-primary);
+  }
+
+  .domain-card__arrow {
+    transition: transform var(--duration-fast) var(--ease-default);
+  }
+
+  .domain-card:hover .domain-card__arrow {
+    transform: translateX(3px);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .domain-card,
+    .domain-card__arrow {
+      transition: none;
+      transform: none;
+    }
+  }
+</style>

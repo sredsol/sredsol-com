@@ -1,0 +1,160 @@
+/**
+ * Color tokens — Semantic design tokens for light and dark modes
+ * Subtle Computational Palette:
+ *   Scholarly Cobalt (#3b82f6) / Indigo (#4f46e5) with deep space slate (#0a0f1d),
+ *   muted telemetry cyan (#38bdf8), and warm sensor amber (#d97706).
+ */
+
+:root {
+  /* === Core surfaces (Light Mode: Soft Cool Mist / Alabaster) === */
+  --background: #f8fafc;
+  --foreground: #0f172a;
+  --card: #fff;
+  --card-foreground: #0f172a;
+  --popover: #fff;
+  --popover-foreground: #0f172a;
+
+  /* === Primary — Precision Scholarly Cobalt === */
+  --primary: #2563eb;
+  --primary-foreground: #fff;
+  --primary-hover: #1d4ed8;
+  --primary-active: #1e40af;
+  --primary-muted: #eff6ff;
+
+  /* === Secondary === */
+  --secondary: #f1f5f9;
+  --secondary-foreground: #1e293b;
+  --secondary-hover: #e2e8f0;
+
+  /* === Accent === */
+  --accent: #f1f5f9;
+  --accent-foreground: #1e293b;
+  --accent-hover: #e2e8f0;
+
+  /* === Muted === */
+  --muted: #f1f5f9;
+  --muted-foreground: #64748b;
+
+  /* === Border & Ring === */
+  --border: #e2e8f0;
+  --ring: #3b82f6;
+  --ring-offset: #fff;
+
+  /* === Subtle Telemetry & Functional Accents === */
+  --color-brand-primary: #2563eb;
+  --color-brand-secondary: #4f46e5;
+  --color-brand-accent: #0284c7;
+  --color-accent-cyan: #0284c7;
+  --color-accent-amber: #d97706;
+  --color-accent-emerald: #059669;
+
+  /* === Semantic Status === */
+  --destructive: #dc2626;
+  --destructive-foreground: #fff;
+  --success: #059669;
+  --success-foreground: #fff;
+  --warning: #d97706;
+  --warning-foreground: #fff;
+  --info: #0284c7;
+  --info-foreground: #fff;
+
+  /* === Surface invert === */
+  --surface-invert: #0f172a;
+  --surface-invert-foreground: #f8fafc;
+  --surface-invert-border: #334155;
+}
+
+.dark {
+  /* === Core surfaces (Dark Mode: Deep Space Slate / Carbon) === */
+  --background: #0a0f1d;
+  --foreground: #f1f5f9;
+  --card: #111827;
+  --card-foreground: #f1f5f9;
+  --popover: #111827;
+  --popover-foreground: #f1f5f9;
+
+  /* === Primary — Precision Cobalt on Dark === */
+  --primary: #3b82f6;
+  --primary-foreground: #0a0f1d;
+  --primary-hover: #60a5fa;
+  --primary-active: #93c5fd;
+  --primary-muted: #1e293b;
+
+  /* === Secondary === */
+  --secondary: #161f32;
+  --secondary-foreground: #f1f5f9;
+  --secondary-hover: #1e293b;
+
+  /* === Accent === */
+  --accent: #161f32;
+  --accent-foreground: #f1f5f9;
+  --accent-hover: #1e293b;
+
+  /* === Muted === */
+  --muted: #161f32;
+  --muted-foreground: #94a3b8;
+
+  /* === Border & Ring === */
+  --border: #1f293d;
+  --ring: #3b82f6;
+  --ring-offset: #0a0f1d;
+
+  /* === Subtle Telemetry & Functional Accents === */
+  --color-brand-primary: #3b82f6;
+  --color-brand-secondary: #6366f1;
+  --color-brand-accent: #38bdf8;
+  --color-accent-cyan: #38bdf8;
+  --color-accent-amber: #f59e0b;
+  --color-accent-emerald: #10b981;
+
+  /* === Semantic Status === */
+  --destructive: #ef4444;
+  --destructive-foreground: #fff;
+  --success: #10b981;
+  --success-foreground: #0a0f1d;
+  --warning: #f59e0b;
+  --warning-foreground: #0a0f1d;
+  --info: #38bdf8;
+  --info-foreground: #0a0f1d;
+
+  /* === Surface invert === */
+  --surface-invert: #f8fafc;
+  --surface-invert-foreground: #0f172a;
+  --surface-invert-border: #cbd5e1;
+}
+
+/* === Radius === */
+:root {
+  --radius-xs: 0.125rem;
+  --radius-sm: 0.25rem;
+  --radius-md: 0.375rem;
+  --radius-lg: 0.5rem;
+  --radius-xl: 0.75rem;
+  --radius-2xl: 1rem;
+  --radius-full: 9999px;
+}
+
+/**
+ * === Legacy color aliases (compatibility bridge) ===
+ */
+:root {
+  --color-bg-primary: var(--background);
+  --color-bg-secondary: var(--secondary);
+  --color-bg-tertiary: var(--accent);
+  --color-text-primary: var(--foreground);
+  --color-text-secondary: var(--muted-foreground);
+  --color-border: var(--border);
+}
+
+/* === Shadow scale (subtle, dark-mode aware) === */
+:root {
+  --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 4%);
+  --shadow-md: 0 4px 12px -2px rgb(0 0 0 / 6%), 0 2px 4px -2px rgb(0 0 0 / 4%);
+  --shadow-lg: 0 12px 28px -6px rgb(0 0 0 / 8%), 0 4px 8px -4px rgb(0 0 0 / 4%);
+}
+
+.dark {
+  --shadow-sm: 0 1px 3px 0 rgb(0 0 0 / 30%);
+  --shadow-md: 0 4px 14px -2px rgb(0 0 0 / 40%), 0 2px 5px -2px rgb(0 0 0 / 30%);
+  --shadow-lg: 0 12px 28px -6px rgb(0 0 0 / 50%), 0 4px 8px -4px rgb(0 0 0 / 35%);
+}

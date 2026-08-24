@@ -1,0 +1,80 @@
+---
+import { cn } from "../../../../lib/cn";
+
+export interface Props {
+  size?: "sm" | "md" | "lg";
+  align?: "left" | "center" | "right";
+  class?: string;
+}
+
+const { size = "md", align = "center", class: className } = Astro.props as Props;
+
+const dimensions = {
+  sm: { width: 44, height: 18, strokeWidth: 1 },
+  md: { width: 68, height: 26, strokeWidth: 1.2 },
+  lg: { width: 96, height: 36, strokeWidth: 1.5 },
+}[size];
+---
+
+<div
+  class={cn(
+    "sredsol-system-mark",
+    `sredsol-system-mark--${size}`,
+    `sredsol-system-mark--${align}`,
+    className
+  )}
+  aria-hidden="true"
+>
+  <svg
+    width={dimensions.width}
+    height={dimensions.height}
+    viewBox="0 0 72 28"
+    fill="none"
+    xmlns="http://www.w3.org/2000/svg"
+    class="sredsol-system-mark__svg"
+  >
+    <!-- Horizontal Bus Wire -->
+    <line x1="4" y1="8" x2="68" y2="8" stroke="var(--border)" stroke-width={dimensions.strokeWidth} />
+    <!-- Branch Line -->
+    <path d="M36 8 L54 22" stroke="color-mix(in srgb, var(--color-brand-primary) 50%, var(--border))" stroke-width={dimensions.strokeWidth} stroke-dasharray="2 2" />
+
+    <!-- Terminal Outer Dots -->
+    <circle cx="4" cy="8" r="1.5" fill="var(--muted-foreground)" />
+    <circle cx="68" cy="8" r="1.5" fill="var(--muted-foreground)" />
+
+    <!-- Primary Junction Node -->
+    <circle cx="36" cy="8" r="3" fill="var(--color-brand-primary)" />
+    <circle cx="36" cy="8" r="5" stroke="var(--color-brand-primary)" stroke-width="0.8" opacity="0.6" />
+
+    <!-- Branched Node -->
+    <circle cx="54" cy="22" r="2.5" fill="var(--color-brand-accent)" />
+    <circle cx="54" cy="22" r="4.5" stroke="var(--color-brand-accent)" stroke-width="0.6" opacity="0.4" />
+  </svg>
+</div>
+
+<style>
+  .sredsol-system-mark {
+    display: flex;
+    align-items: center;
+    opacity: 0.85;
+    user-select: none;
+    pointer-events: none;
+  }
+
+  .sredsol-system-mark--center {
+    justify-content: center;
+  }
+
+  .sredsol-system-mark--left {
+    justify-content: flex-start;
+  }
+
+  .sredsol-system-mark--right {
+    justify-content: flex-end;
+  }
+
+  .sredsol-system-mark__svg {
+    display: block;
+    overflow: visible;
+  }
+</style>

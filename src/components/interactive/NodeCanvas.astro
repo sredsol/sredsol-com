@@ -1,0 +1,405 @@
+---
+export interface Props {
+  nodeCount?: number;
+  class?: string;
+  locale?: string;
+}
+
+const { nodeCount = 36, class: className } = Astro.props as Props;
+---
+
+<div class={`hero-node-field ${className || ""}`} data-hero-node-field data-count={nodeCount}>
+  <canvas class="node-canvas"></canvas>
+</div>
+
+<script>
+  function getThemeColors() {
+    const root = document.documentElement;
+    const style = getComputedStyle(root);
+    const isDark = root.classList.contains("dark");
+
+    return {
+      brand: style.getPropertyValue("--color-brand-primary").trim() || (isDark ? "#5b73ff" : "#3042e6"),
+      accent: style.getPropertyValue("--color-brand-accent").trim() || "#00e5ff",
+      foreground: style.getPropertyValue("--foreground").trim() || (isDark ? "#f0f4fc" : "#0f172a"),
+      muted: style.getPropertyValue("--muted-foreground").trim() || (isDark ? "#8b9bb4" : "#64748b"),
+      isDark,
+    };
+  }
+
+  function initNodeCanvas() {
+    const containers = document.querySelectorAll<HTMLElement>("[data-hero-node-field]");
+
+    containers.forEach((container) => {
+      if (container.dataset.initialized) return;
+      container.dataset.initialized = "true";
+
+      const canvas = container.querySelector<HTMLCanvasElement>(".node-canvas");
+      if (!canvas) return;
+
+      const rawCtx = canvas.getContext("2d");
+      if (!rawCtx) return;
+      const ctx: CanvasRenderingContext2D = rawCtx;
+      const renderCanvas: HTMLCanvasElement = canvas;
+
+      const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+      let width = 0;
+      let height = 0;
+
+      // Pointer tracking
+      let pointerX = -1000;
+      let pointerY = -1000;
+
+      interface NodeItem {
+        x: number;
+        y: number;
+        baseX: number;
+        baseY: number;
+        vx: number;
+        vy: number;
+        radius: number;
+        isHub?: boolean;
+        hubCode?: string;
+        hubLabel?: string;
+        coordLabel?: string;
+        align?: "left" | "right";
+        label?: string;
+      }
+
+      let nodes: NodeItem[] = [];
+
+      function setupNodes() {
+        nodes = [];
+        const w = width || 1200;
+        const h = height || 700;
+
+        // 1. Four Domain Master Hubs (Positioned safely at outer perimeters away from hero text)
+        const leftX = Math.max(32, Math.min(w * 0.08, 90));
+        const rightX = Math.min(w - 32, Math.max(w * 0.92, w - 90));
+        const topY = Math.max(48, Math.min(h * 0.16, 110));
+        const bottomY = Math.min(h - 48, Math.max(h * 0.84, h - 110));
+
+        const hubs = [
+          {
+            baseX: leftX,
+            baseY: topY,
+            hubCode: "01 // COMP",
+            hubLabel: "MATHEMATICS & SIM",
+            coordLabel: `X:${Math.round(leftX)} Y:${Math.round(topY)}`,
+            align: "left" as const,
+          },
+          {
+            baseX: leftX + 16,
+            baseY: bottomY,
+            hubCode: "02 // PHYS",
+            hubLabel: "CIRCUITS & ROBOTICS",
+            coordLabel: `X:${Math.round(leftX + 16)} Y:${Math.round(bottomY)}`,
+            align: "left" as const,
+          },
+          {
+            baseX: rightX,
+            baseY: topY + 10,
+            hubCode: "03 // OBS",
+            hubLabel: "TELEMETRY & SPACE",
+            coordLabel: `X:${Math.round(rightX)} Y:${Math.round(topY + 10)}`,
+            align: "right" as const,
+          },
+          {
+            baseX: rightX - 16,
+            baseY: bottomY,
+            hubCode: "04 // LEARN",
+            hubLabel: "LEARNINGOS",
+            coordLabel: `X:${Math.round(rightX - 16)} Y:${Math.round(bottomY)}`,
+            align: "right" as const,
+          },
+        ];
+
+        hubs.forEach((hub) => {
+          nodes.push({
+            x: hub.baseX,
+            y: hub.baseY,
+            baseX: hub.baseX,
+            baseY: hub.baseY,
+            vx: 0,
+            vy: 0,
+            radius: 4.5,
+            isHub: true,
+            hubCode: hub.hubCode,
+            hubLabel: hub.hubLabel,
+            coordLabel: hub.coordLabel,
+            align: hub.align,
+          });
+        });
+
+        // 2. Satellite Particles
+        const satelliteLabels = ["WASM", "I2C", "SQLITE", "FFT", "GRAPH", "SIMD", "UART", "GPU"];
+        const count = parseInt(container.dataset.count || "36", 10);
+
+        for (let i = 0; i < count; i++) {
+          // Initialize outside the center text zone
+          let rx = Math.random() * w;
+          const ry = Math.random() * h;
+
+          // If spawned in center text area, shift to flanks
+          const cx = w / 2;
+          const cy = h / 2 - 10;
+          if (Math.abs(rx - cx) < w * 0.35 && Math.abs(ry - cy) < h * 0.3) {
+            rx = rx < cx ? Math.random() * (w * 0.18) : w - Math.random() * (w * 0.18);
+          }
+
+          nodes.push({
+            x: rx,
+            y: ry,
+            baseX: rx,
+            baseY: ry,
+            vx: prefersReducedMotion ? 0 : (Math.random() - 0.5) * 0.4,
+            vy: prefersReducedMotion ? 0 : (Math.random() - 0.5) * 0.4,
+            radius: i % 5 === 0 ? 2.5 : 1.5,
+            label: i % 4 === 0 ? satelliteLabels[i % satelliteLabels.length] : undefined,
+          });
+        }
+      }
+
+      function resize() {
+        const rect = container.getBoundingClientRect();
+        width = rect.width;
+        height = rect.height;
+        const dpr = Math.min(window.devicePixelRatio || 1, 2);
+        renderCanvas.width = width * dpr;
+        renderCanvas.height = height * dpr;
+        ctx.scale(dpr, dpr);
+        setupNodes();
+      }
+
+      window.addEventListener("resize", resize, { passive: true });
+      resize();
+
+      container.addEventListener("pointermove", (e) => {
+        const rect = container.getBoundingClientRect();
+        pointerX = e.clientX - rect.left;
+        pointerY = e.clientY - rect.top;
+      }, { passive: true });
+
+      container.addEventListener("pointerleave", () => {
+        pointerX = -1000;
+        pointerY = -1000;
+      }, { passive: true });
+
+      let time = 0;
+
+      function render() {
+        if (!width || !height) {
+          resize();
+        }
+
+        ctx.clearRect(0, 0, width, height);
+        time += 0.015;
+
+        const colors = getThemeColors();
+        const centerExclusionX = width / 2;
+        const centerExclusionY = height / 2 - 10;
+        const exclusionRadiusX = Math.min(width * 0.38, 420);
+        const exclusionRadiusY = Math.min(height * 0.28, 160);
+
+        // 1. Draw Network Connections
+        const maxDist = 140;
+        for (let i = 0; i < nodes.length; i++) {
+          for (let j = i + 1; j < nodes.length; j++) {
+            const dx = nodes[i].x - nodes[j].x;
+            const dy = nodes[i].y - nodes[j].y;
+            const dist = Math.sqrt(dx * dx + dy * dy);
+
+            if (dist < maxDist) {
+              const alpha = (1 - dist / maxDist) * (colors.isDark ? 0.22 : 0.12);
+              ctx.strokeStyle = colors.isDark
+                ? `rgba(91, 115, 255, ${alpha})`
+                : `rgba(48, 66, 230, ${alpha})`;
+              ctx.lineWidth = nodes[i].isHub || nodes[j].isHub ? 1.2 : 0.8;
+              ctx.beginPath();
+              ctx.moveTo(nodes[i].x, nodes[i].y);
+              ctx.lineTo(nodes[j].x, nodes[j].y);
+              ctx.stroke();
+
+              // Pulsing Signal along links
+              if ((i + j) % 8 === 0 && !prefersReducedMotion) {
+                const progress = (time * 0.5 + ((i * 11) % 10) / 10) % 1;
+                const px = nodes[i].x + (nodes[j].x - nodes[i].x) * progress;
+                const py = nodes[i].y + (nodes[j].y - nodes[i].y) * progress;
+                ctx.fillStyle = colors.accent;
+                ctx.beginPath();
+                ctx.arc(px, py, 1.5, 0, Math.PI * 2);
+                ctx.fill();
+              }
+            }
+          }
+        }
+
+        // Dynamic pointer filament connections
+        if (pointerX > 0 && pointerY > 0) {
+          for (const node of nodes) {
+            const pdx = pointerX - node.x;
+            const pdy = pointerY - node.y;
+            const pdist = Math.sqrt(pdx * pdx + pdy * pdy);
+            if (pdist < 100) {
+              const alpha = (1 - pdist / 100) * (colors.isDark ? 0.35 : 0.22);
+              ctx.strokeStyle = `rgba(59, 130, 246, ${alpha})`;
+              ctx.lineWidth = 1;
+              ctx.setLineDash([3, 3]);
+              ctx.beginPath();
+              ctx.moveTo(pointerX, pointerY);
+              ctx.lineTo(node.x, node.y);
+              ctx.stroke();
+              ctx.setLineDash([]);
+            }
+          }
+        }
+
+        // 2. Draw and Update Nodes
+        for (const node of nodes) {
+          if (node.isHub) {
+            // Hub Floating Physics (Subtle gentle orbital motion)
+            if (!prefersReducedMotion) {
+              node.x = node.baseX + Math.cos(time * 0.6 + node.baseY) * 4;
+              node.y = node.baseY + Math.sin(time * 0.6 + node.baseX) * 4;
+            }
+
+            // Pointer repulsion on hubs
+            const pdx = pointerX - node.x;
+            const pdy = pointerY - node.y;
+            const pdist = Math.sqrt(pdx * pdx + pdy * pdy);
+            if (pdist < 90 && pdist > 0) {
+              const force = (90 - pdist) / 90 * 0.35;
+              node.x += (pdx / pdist) * force;
+              node.y += (pdy / pdist) * force;
+            }
+
+            // Hub Vertex Dot
+            ctx.shadowColor = colors.brand;
+            ctx.shadowBlur = 8;
+            ctx.fillStyle = colors.brand;
+            ctx.beginPath();
+            ctx.arc(node.x, node.y, node.radius, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Concentric Radar Rings
+            ctx.strokeStyle = colors.isDark ? "rgba(91, 115, 255, 0.5)" : "rgba(48, 66, 230, 0.4)";
+            ctx.lineWidth = 1.2;
+            ctx.beginPath();
+            ctx.arc(node.x, node.y, node.radius * 2.2, 0, Math.PI * 2);
+            ctx.stroke();
+
+            ctx.strokeStyle = colors.isDark ? "rgba(255, 255, 255, 0.12)" : "rgba(0, 0, 0, 0.08)";
+            ctx.lineWidth = 0.8;
+            ctx.beginPath();
+            ctx.arc(node.x, node.y, node.radius * 3.8, 0, Math.PI * 2);
+            ctx.stroke();
+            ctx.shadowBlur = 0;
+
+            // Sleek HUD Text Labels (Only if width > 640px)
+            if (width > 640 && node.hubCode && node.hubLabel) {
+              const isRight = node.align === "right";
+              const textX = isRight ? node.x - 16 : node.x + 16;
+              const textY = node.y - 6;
+
+              ctx.textAlign = isRight ? "right" : "left";
+
+              // Hub Code (01 // COMP)
+              ctx.font = "bold 9px monospace";
+              ctx.fillStyle = colors.brand;
+              ctx.fillText(node.hubCode, textX, textY);
+
+              // Hub Title (MATHEMATICS & SIM)
+              ctx.font = "bold 10px monospace";
+              ctx.fillStyle = colors.foreground;
+              ctx.fillText(node.hubLabel, textX, textY + 12);
+
+              // Coordinate
+              if (node.coordLabel) {
+                ctx.font = "8px monospace";
+                ctx.fillStyle = colors.muted;
+                ctx.fillText(node.coordLabel, textX, textY + 22);
+              }
+            }
+          } else {
+            // Satellite Particle Physics
+            if (!prefersReducedMotion) {
+              node.x += node.vx;
+              node.y += node.vy;
+
+              // Bounds bounce
+              if (node.x < 8 || node.x > width - 8) node.vx *= -1;
+              if (node.y < 8 || node.y > height - 8) node.vy *= -1;
+
+              // Central Text Ellipse Exclusion Force
+              const normDx = (node.x - centerExclusionX) / exclusionRadiusX;
+              const normDy = (node.y - centerExclusionY) / exclusionRadiusY;
+              const ellipseDistSq = normDx * normDx + normDy * normDy;
+
+              if (ellipseDistSq < 1 && ellipseDistSq > 0) {
+                const overlapFactor = 1 - Math.sqrt(ellipseDistSq);
+                node.x += normDx * overlapFactor * 1.5;
+                node.y += normDy * overlapFactor * 1.5;
+              }
+
+              // Pointer Repulsion
+              const pdx = pointerX - node.x;
+              const pdy = pointerY - node.y;
+              const pdist = Math.sqrt(pdx * pdx + pdy * pdy);
+              if (pdist < 100 && pdist > 0) {
+                const force = (100 - pdist) / 100 * 0.7;
+                node.x += (pdx / pdist) * force;
+                node.y += (pdy / pdist) * force;
+              }
+            }
+
+            // Satellite Dot
+            ctx.fillStyle = colors.isDark ? "rgba(255, 255, 255, 0.7)" : "rgba(30, 41, 59, 0.65)";
+            ctx.beginPath();
+            ctx.arc(node.x, node.y, node.radius, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Satellite Label (Only rendered when not colliding with text)
+            if (node.label) {
+              const normDx = (node.x - centerExclusionX) / (exclusionRadiusX + 30);
+              const normDy = (node.y - centerExclusionY) / (exclusionRadiusY + 20);
+              if (normDx * normDx + normDy * normDy >= 1) {
+                ctx.textAlign = "left";
+                ctx.font = "8px monospace";
+                ctx.fillStyle = colors.isDark ? "rgba(255, 255, 255, 0.65)" : "rgba(15, 23, 42, 0.6)";
+                ctx.fillText(node.label, node.x + 6, node.y + 3);
+              }
+            }
+          }
+        }
+
+        if (!prefersReducedMotion) {
+          requestAnimationFrame(render);
+        }
+      }
+
+      render();
+    });
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", initNodeCanvas);
+  } else {
+    initNodeCanvas();
+  }
+  document.addEventListener("astro:page-load", initNodeCanvas);
+</script>
+
+<style>
+  .hero-node-field {
+    position: absolute;
+    inset: 0;
+    pointer-events: auto;
+    overflow: hidden;
+  }
+
+  .node-canvas {
+    display: block;
+    width: 100%;
+    height: 100%;
+  }
+</style>

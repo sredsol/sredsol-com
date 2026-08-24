@@ -1,0 +1,73 @@
+---
+import { slugify } from "../../lib/utils";
+
+interface Props {
+  node?: {
+    style?: string;
+    textAlign?: string;
+    children?: Array<{ text?: string }>;
+  };
+  [key: string]: unknown;
+}
+
+const { node, ...attrs } = Astro.props as Props;
+const style = node?.style ?? "normal";
+
+const isHeading =
+  style === "h1" ||
+  style === "h2" ||
+  style === "h3" ||
+  style === "h4" ||
+  style === "h5" ||
+  style === "h6";
+
+let id: string | undefined;
+if (isHeading) {
+  const text = (node?.children ?? [])
+    .map((child) => child?.text ?? "")
+    .join("")
+    .trim();
+  id = slugify(text);
+}
+
+const alignClass = node?.textAlign ? `has-text-align-${node.textAlign}` : undefined;
+const combinedClass = [attrs.class, alignClass].filter(Boolean).join(" ") || undefined;
+---
+
+{
+  isHeading ? (
+    style === "h1" ? (
+      <h1 id={id} class={combinedClass} {...attrs}>
+        <slot />
+      </h1>
+    ) : style === "h2" ? (
+      <h2 id={id} class={combinedClass} {...attrs}>
+        <slot />
+      </h2>
+    ) : style === "h3" ? (
+      <h3 id={id} class={combinedClass} {...attrs}>
+        <slot />
+      </h3>
+    ) : style === "h4" ? (
+      <h4 id={id} class={combinedClass} {...attrs}>
+        <slot />
+      </h4>
+    ) : style === "h5" ? (
+      <h5 id={id} class={combinedClass} {...attrs}>
+        <slot />
+      </h5>
+    ) : (
+      <h6 id={id} class={combinedClass} {...attrs}>
+        <slot />
+      </h6>
+    )
+  ) : style === "blockquote" ? (
+    <blockquote class={combinedClass} {...attrs}>
+      <slot />
+    </blockquote>
+  ) : (
+    <p class={combinedClass} {...attrs}>
+      <slot />
+    </p>
+  )
+}

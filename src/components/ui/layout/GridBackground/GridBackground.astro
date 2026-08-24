@@ -1,0 +1,89 @@
+---
+import { cn } from "../../../../lib/cn";
+
+export interface Props {
+  variant?: "grid" | "dots" | "crosshairs" | "isometric";
+  glow?: boolean;
+  glowPosition?: "top" | "center" | "bottom";
+  mask?: "radial" | "top" | "bottom" | "none";
+  class?: string;
+}
+
+const {
+  variant = "grid",
+  glow = false,
+  glowPosition = "top",
+  mask = "radial",
+  class: className,
+} = Astro.props as Props;
+
+const variantClass = {
+  grid: "bg-grid",
+  dots: "bg-grid bg-grid--dots",
+  crosshairs: "bg-grid bg-grid--crosshairs",
+  isometric: "bg-grid bg-grid--isometric",
+}[variant];
+---
+
+<div
+  class={cn("spatial-backdrop", className)}
+  data-mask={mask}
+  data-glow-position={glowPosition}
+  aria-hidden="true"
+>
+  <div class={variantClass}></div>
+  {glow && <div class="bg-glow"></div>}
+  <slot />
+</div>
+
+<style>
+  .spatial-backdrop {
+    position: absolute;
+    inset: 0;
+    overflow: hidden;
+    pointer-events: none;
+    z-index: -1;
+  }
+
+  .spatial-backdrop[data-mask="radial"] :global(.bg-grid) {
+    mask-image: radial-gradient(ellipse 75% 60% at 50% 0%, black 40%, transparent 100%);
+  }
+
+  .spatial-backdrop[data-mask="top"] :global(.bg-grid) {
+    mask-image: linear-gradient(to bottom, black 20%, transparent 100%);
+  }
+
+  .spatial-backdrop[data-mask="bottom"] :global(.bg-grid) {
+    mask-image: linear-gradient(to top, black 20%, transparent 100%);
+  }
+
+
+  .spatial-backdrop[data-mask="none"] :global(.bg-grid) {
+    mask-image: none;
+  }
+
+  .spatial-backdrop[data-glow-position="top"] :global(.bg-glow) {
+    background: radial-gradient(
+      ellipse 60% 50% at 50% -10%,
+      color-mix(in srgb, var(--foreground) 8%, transparent),
+      transparent 70%
+    );
+  }
+
+  .spatial-backdrop[data-glow-position="center"] :global(.bg-glow) {
+    background: radial-gradient(
+      ellipse 60% 50% at 50% 50%,
+      color-mix(in srgb, var(--foreground) 8%, transparent),
+      transparent 70%
+    );
+  }
+
+  .spatial-backdrop[data-glow-position="bottom"] :global(.bg-glow) {
+    background: radial-gradient(
+      ellipse 60% 50% at 50% 110%,
+      color-mix(in srgb, var(--foreground) 8%, transparent),
+      transparent 70%
+    );
+  }
+</style>
+

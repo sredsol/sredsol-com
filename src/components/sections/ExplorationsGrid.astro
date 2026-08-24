@@ -1,0 +1,132 @@
+---
+import { cn } from "../../lib/cn";
+import { ExplorationCard } from "../ui/data-display";
+import { Button } from "../ui/form";
+import { getAllExplorations, getRelatedArticleTitle } from "../../lib/explorations";
+
+export interface Props {
+  title?: string;
+  eyebrow?: string;
+  lead?: string;
+  limit?: number;
+  showHeader?: boolean;
+  showViewAll?: boolean;
+  locale?: string;
+  class?: string;
+}
+
+const {
+  title = "Featured Studios & Explorations",
+  eyebrow = "COMPUTATIONAL ENVIRONMENTS",
+  lead = "Interactive computational instruments and experimental studios built to make complex phenomena intuitive.",
+  limit,
+  showHeader = true,
+  showViewAll = false,
+  class: className,
+} = Astro.props as Props;
+
+const rawExplorations = await getAllExplorations();
+const allExplorations = rawExplorations.map((exp) => ({
+  title: exp.title,
+  slug: exp.slug,
+  domain: exp.domain,
+  domainLabel: exp.domainLabel,
+  status: exp.status,
+  description: exp.description,
+  actionPipeline: exp.actionPipeline,
+  sceneId: exp.sceneId,
+  technologies: exp.technologies,
+  relatedArticleSlug: exp.relatedArticles?.[0],
+  relatedArticleTitle: getRelatedArticleTitle(exp.relatedArticles?.[0]),
+  relationships: exp.relationships,
+  href: `/explorations/${exp.slug}`,
+}));
+
+const displayedExplorations = limit ? allExplorations.slice(0, limit) : allExplorations;
+---
+
+<section class={cn("explorations-grid-section py-20", className)} id="explorations">
+  <div class="container">
+    {
+      showHeader && (
+        <div class="explorations-grid-section__header">
+          <header class="section-head">
+            <p class="section-head__eyebrow">{eyebrow}</p>
+            <h2 class="section-head__title">{title}</h2>
+            <p class="section-head__lead">{lead}</p>
+          </header>
+        </div>
+      )
+    }
+
+    <div class={cn("explorations-studios-grid", !showHeader && "mt-0")}>
+      {
+        displayedExplorations.map((item) => (
+          <div class="explorations-studio-item">
+            <ExplorationCard
+              title={item.title}
+              slug={item.slug}
+              domain={item.domain}
+              domainLabel={item.domainLabel}
+              status={item.status}
+              description={item.description}
+              actionPipeline={item.actionPipeline}
+              sceneId={item.sceneId}
+              technologies={item.technologies}
+              relationships={item.relationships}
+              relatedArticleSlug={item.relatedArticleSlug}
+              relatedArticleTitle={item.relatedArticleTitle}
+              href={item.href}
+            />
+          </div>
+        ))
+      }
+    </div>
+
+    {
+      showViewAll && (
+        <div class="explorations-grid-section__action">
+          <Button variant="secondary" size="lg" href="/explorations">
+            <span>View All Explorations & Studios</span>
+            <span aria-hidden="true">&rarr;</span>
+          </Button>
+        </div>
+      )
+    }
+  </div>
+</section>
+
+<style>
+  .explorations-grid-section {
+    position: relative;
+    border-bottom: 1px solid var(--border);
+    background: var(--color-bg-secondary);
+  }
+
+  /* Balanced 2x2 Interactive Studios Grid */
+  .explorations-studios-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: var(--space-xl);
+    margin-top: var(--space-2xl);
+  }
+
+  @media (min-width: 52rem) {
+    .explorations-studios-grid {
+      grid-template-columns: repeat(2, 1fr);
+      gap: var(--space-xl);
+    }
+  }
+
+  .explorations-studio-item {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+  }
+
+  .explorations-grid-section__action {
+    display: flex;
+    justify-content: center;
+    margin-top: var(--space-2xl);
+  }
+</style>

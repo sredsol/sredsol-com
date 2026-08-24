@@ -1,0 +1,276 @@
+---
+import MarketingLayout from "../layouts/MarketingLayout.astro";
+import { GridBackground } from "../components/ui/layout";
+import { NodeIndicator, ScopeGauge, SignalBadge } from "../components/ui/data-display";
+import { Button } from "../components/ui/form";
+import { InstrumentScope } from "../components/interactive";
+
+import { siteConfig } from "../config/site.config";
+
+const locale = (Astro.currentLocale || "en") as "en";
+
+const labInstruments = [
+  {
+    id: "INST-01",
+    name: "Oscilloscope Waveform Analyzer",
+    variant: "waveform" as const,
+    channel: "CH-A1",
+    label: "Sine Wave Generator",
+    value: "440",
+    unit: "Hz",
+    status: "streaming" as const,
+    description: "Real-time frequency response and harmonic synthesis testbench.",
+  },
+  {
+    id: "INST-02",
+    name: "Telemetry Channel Matrix",
+    variant: "matrix" as const,
+    channel: "CH-M4",
+    label: "Sensor Bus Matrix",
+    value: "16",
+    unit: "Active",
+    status: "operational" as const,
+    description: "16-channel sensory bus simulator with packet inspection.",
+  },
+  {
+    id: "INST-03",
+    name: "Logic Frequency Monitor",
+    variant: "frequency" as const,
+    channel: "CH-F8",
+    label: "Logic Gate Pulse",
+    value: "1.2",
+    unit: "MHz",
+    status: "streaming" as const,
+    description: "Continuous clock frequency monitor for digital logic gates.",
+  },
+  {
+    id: "INST-04",
+    name: "Execution Dial Gauge",
+    variant: "dial" as const,
+    channel: "CH-D2",
+    label: "Kernel Throughput",
+    value: "98.4",
+    unit: "%",
+    status: "operational" as const,
+    description: "Computational engine utilization and cache efficiency gauge.",
+  },
+];
+---
+
+<MarketingLayout
+  title={`Lab & Instruments — ${siteConfig.name}`}
+  description="The interactive SREDSOL Lab: live computational instruments, waveform scopes, and simulation sandboxes."
+  locale={locale}
+  path="/lab"
+>
+  <!-- Lab Portal Header -->
+  <section class="lab-header py-16">
+    <GridBackground variant="crosshairs" glow glowPosition="top" mask="radial" />
+    <div class="container">
+      <div class="lab-header__meta">
+        <NodeIndicator label="EXPERIMENTAL SANDBOX // LAB PORTAL" code="LAB-2026" status="streaming" size="sm" />
+      </div>
+      <h1 class="lab-header__title">SREDSOL Lab</h1>
+      <p class="lab-header__lead">
+        Active instruments, experimental algorithms, and live simulation sandboxes under continuous research.
+      </p>
+
+      <div class="lab-header__telemetry">
+        <SignalBadge protocol="LAB-CHANNEL" status="streaming" latency="12ms" />
+        <SignalBadge protocol="KERNEL" status="operational" />
+        <SignalBadge protocol="TELEMETRY" status="streaming" />
+      </div>
+    </div>
+  </section>
+
+  <!-- Live Instruments Grid -->
+  <section class="lab-instruments py-20">
+    <div class="container">
+      <header class="section-head">
+        <p class="section-head__eyebrow">ACTIVE INSTRUMENT BENCH</p>
+        <h2 class="section-head__title">Computational Scopes & Telemetry</h2>
+        <p class="section-head__lead">
+          Real-time virtual measurement instruments running deterministic execution pipelines.
+        </p>
+      </header>
+
+      <!-- Interactive Oscilloscope Bench -->
+      <div class="lab-interactive-bench mb-12">
+        <InstrumentScope initialFreq={520} initialAmp={3.3} />
+      </div>
+
+
+      <div class="instruments-grid">
+
+        {
+          labInstruments.map((inst) => (
+            <article class="instrument-card">
+              <header class="instrument-card__header">
+                <div class="instrument-card__meta">
+                  <span class="instrument-card__id">{inst.id}</span>
+                  <SignalBadge status={inst.status} variant="minimal" />
+                </div>
+                <h3 class="instrument-card__title">{inst.name}</h3>
+              </header>
+
+              <div class="instrument-card__scope">
+                <ScopeGauge
+                  variant={inst.variant}
+                  channel={inst.channel}
+                  label={inst.label}
+                  value={inst.value}
+                  unit={inst.unit}
+                />
+              </div>
+
+              <p class="instrument-card__description">{inst.description}</p>
+            </article>
+          ))
+        }
+      </div>
+    </div>
+  </section>
+
+  <!-- Studio Portals CTA -->
+  <section class="lab-studios py-16">
+    <div class="container">
+      <div class="lab-studios__box">
+        <h2 class="lab-studios__title">Explore Full Studio Sandboxes</h2>
+        <p class="lab-studios__lead">
+          Launch full standalone environments: Physical Computing Studio, LearningOS, and Observation Studio.
+        </p>
+        <div class="lab-studios__actions">
+          <Button variant="primary" size="lg" href="/explorations">
+            <span>Browse All Studios</span>
+            <span aria-hidden="true">&rarr;</span>
+          </Button>
+        </div>
+      </div>
+    </div>
+  </section>
+</MarketingLayout>
+
+<style>
+  .lab-header {
+    position: relative;
+    border-bottom: 1px solid var(--border);
+    text-align: center;
+  }
+
+  .lab-header__meta {
+    display: flex;
+    justify-content: center;
+    margin-bottom: var(--space-md);
+  }
+
+  .lab-header__title {
+    margin: 0;
+    font-size: clamp(2rem, 4.5vw, 3.5rem);
+    font-family: var(--font-heading);
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    color: var(--foreground);
+  }
+
+  .lab-header__lead {
+    margin: var(--space-md) auto 0;
+    font-size: clamp(1rem, 1.5vw, 1.15rem);
+    color: var(--muted-foreground);
+    line-height: 1.6;
+    max-width: 38rem;
+  }
+
+  .lab-header__telemetry {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: var(--space-md);
+    margin-top: var(--space-xl);
+  }
+
+  .lab-instruments {
+    position: relative;
+    border-bottom: 1px solid var(--border);
+    background: var(--color-bg-secondary);
+  }
+
+  .instruments-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(18rem, 1fr));
+    gap: var(--space-xl);
+    margin-top: var(--space-2xl);
+  }
+
+  .instrument-card {
+    display: flex;
+    flex-direction: column;
+    padding: var(--space-lg);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-xl);
+    background: var(--card);
+    box-shadow: var(--shadow-sm);
+  }
+
+  .instrument-card__header {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+  }
+
+  .instrument-card__meta {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .instrument-card__id {
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    color: var(--muted-foreground);
+  }
+
+  .instrument-card__title {
+    margin: 0;
+    font-size: 1.15rem;
+    font-family: var(--font-heading);
+    font-weight: 700;
+    color: var(--foreground);
+  }
+
+  .instrument-card__scope {
+    margin: var(--space-lg) 0;
+  }
+
+  .instrument-card__description {
+    margin: 0;
+    font-size: 0.875rem;
+    color: var(--muted-foreground);
+    line-height: 1.5;
+  }
+
+  .lab-studios__box {
+    text-align: center;
+    padding: var(--space-2xl);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-2xl);
+    background: var(--card);
+  }
+
+  .lab-studios__title {
+    margin: 0;
+    font-size: clamp(1.5rem, 3vw, 2rem);
+    font-family: var(--font-heading);
+    font-weight: 700;
+  }
+
+  .lab-studios__lead {
+    margin: var(--space-md) auto 0;
+    font-size: 1rem;
+    color: var(--muted-foreground);
+    max-width: 32rem;
+  }
+
+  .lab-studios__actions {
+    margin-top: var(--space-xl);
+  }
+</style>

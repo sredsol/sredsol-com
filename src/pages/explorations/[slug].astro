@@ -1,0 +1,786 @@
+---
+import MarketingLayout from "../../layouts/MarketingLayout.astro";
+import { GridBackground } from "../../components/ui/layout";
+import {
+  NodeIndicator,
+  ScopeGauge,
+  SignalBadge,
+  Badge,
+  ExplorationCard,
+} from "../../components/ui/data-display";
+import StudioPreview from "../../components/interactive/StudioPreview.astro";
+import { Button } from "../../components/ui/form";
+import { LabCTA } from "../../components/sections";
+import { siteConfig } from "../../config/site.config";
+import {
+  getExplorationBySlug,
+  getAllExplorations,
+  getRelatedArticleTitle,
+} from "../../lib/explorations";
+import { getRelatedArticles } from "../../emdash/sredsol-relationships";
+import { getPostEntry } from "../../lib/cms";
+
+const { slug } = Astro.params as { slug: string };
+const studio = await getExplorationBySlug(slug);
+
+if (!studio) {
+  return new Response(null, { status: 404 });
+}
+
+const locale = (Astro.currentLocale || "en") as "en";
+const allStudios = await getAllExplorations();
+const otherStudios = allStudios.filter(
+  (s) => s.slug !== studio.slug && s.id !== studio.id
+);
+
+const relatedSlugs = studio.relatedArticles?.length
+  ? studio.relatedArticles
+  : getRelatedArticles(studio.slug);
+
+const relatedPosts = (
+  await Promise.all(
+    relatedSlugs.map(async (artSlug) => {
+      try {
+        const detail = await getPostEntry(artSlug);
+        if (detail && detail.post) {
+          return {
+            slug: artSlug,
+            title: detail.post.data.title,
+            description: detail.post.data.description || "",
+            readingTime: 4,
+          };
+        }
+      } catch {
+        // fallback
+      }
+      return {
+        slug: artSlug,
+        title: getRelatedArticleTitle(artSlug),
+        description:
+          "Foundational research and architectural theory exploring this computational system.",
+        readingTime: 5,
+      };
+    })
+  )
+).filter(Boolean);
+
+const domainTelemetry: Record<string, { label: string; bus: string; clock: string; gaugeType: "waveform" | "dial" | "frequency"; unit: string; value: string }> = {
+  physical: {
+    label: "PHYSICAL SYSTEMS // 02",
+    bus: "400kHz I2C / SPI / WebSerial",
+    clock: "400 kHz",
+    gaugeType: "frequency",
+    unit: "kHz",
+    value: "400",
+  },
+  learning: {
+    label: "LEARNING // 04",
+    bus: "Local SQLite VFS / Reactive State",
+    clock: "0.8 ms",
+    gaugeType: "dial",
+    unit: "ms",
+    value: "0.8",
+  },
+  observation: {
+    label: "OBSERVATION // 03",
+    bus: "16-CH FFT WebSockets Buffer",
+    clock: "60 FPS",
+    gaugeType: "waveform",
+    unit: "FPS",
+    value: "60",
+  },
+  computation: {
+    label: "COMPUTATION // 01",
+    bus: "WASM Vector Matrix / Shader Pipeline",
+    clock: "120 GFLOP/s",
+    gaugeType: "waveform",
+    unit: "GFLOP/s",
+    value: "120",
+  },
+};
+
+const telemetryInfo = domainTelemetry[studio.domain] || domainTelemetry.computation;
+---
+
+<MarketingLayout
+  title={`${studio.title} — Explorations — ${siteConfig.name}`}
+  description={studio.description}
+  locale={locale}
+  path={`/explorations/${studio.slug}`}
+>
+  <!-- Studio Breadcrumb & Header -->
+  <section class="studio-hero py-16">
+    <GridBackground variant="crosshairs" glow glowPosition="top" mask="radial" />
+    <div class="container">
+      <nav class="studio-breadcrumb" aria-label="Breadcrumb">
+        <ol class="studio-breadcrumb__list">
+          <li class="studio-breadcrumb__item">
+            <a href="/" class="studio-breadcrumb__link">Home</a>
+            <span class="studio-breadcrumb__sep" aria-hidden="true">/</span>
+          </li>
+          <li class="studio-breadcrumb__item">
+            <a href="/explorations" class="studio-breadcrumb__link">Explorations</a>
+            <span class="studio-breadcrumb__sep" aria-hidden="true">/</span>
+          </li>
+          <li class="studio-breadcrumb__item studio-breadcrumb__item--current" aria-current="page">
+            {studio.title}
+          </li>
+        </ol>
+      </nav>
+
+      <div class="studio-hero__meta">
+        <NodeIndicator
+          label={studio.domainLabel || telemetryInfo.label}
+          code={`SYS-0${studio.order}`}
+          status={studio.status === "active" ? "active" : "lab"}
+          size="sm"
+        />
+        <span class="studio-hero__telemetry-chip">
+          <span class="studio-hero__telemetry-dot" aria-hidden="true"></span>
+          <span>{telemetryInfo.bus}</span>
+        </span>
+      </div>
+
+      <h1 class="studio-hero__title">{studio.title}</h1>
+      <p class="studio-hero__lead">{studio.description}</p>
+
+      {
+        studio.actionPipeline && (
+          <div class="studio-hero__pipeline">
+            <span class="studio-hero__pipeline-label">ACTION METHODOLOGY:</span>
+            <span class="studio-hero__pipeline-val">{studio.actionPipeline}</span>
+          </div>
+        )
+      }
+
+      <div class="studio-hero__actions">
+        <Button variant="primary" size="lg" href={`/lab?scene=${studio.sceneId}`}>
+          <span>Launch Interactive Lab Session</span>
+          <span aria-hidden="true">&rarr;</span>
+        </Button>
+        <Button variant="secondary" size="lg" href="/explorations">
+          <span>Explore All Studios</span>
+        </Button>
+      </div>
+    </div>
+  </section>
+
+  <!-- Live Interactive Viewport Section -->
+  <section class="studio-viewport-section py-12" id="simulation">
+    <div class="container">
+      <div class="studio-viewport-card">
+        <header class="studio-viewport-card__hud-bar">
+          <div class="studio-viewport-card__hud-left">
+            <Badge variant="outline" size="sm">{studio.domainLabel}</Badge>
+            <span class="studio-viewport-card__hud-id">SCENE: {studio.sceneId}</span>
+          </div>
+          <div class="studio-viewport-card__hud-right">
+            <SignalBadge
+              status={studio.status === "active" ? "streaming" : "operational"}
+              protocol={studio.domain.toUpperCase()}
+            />
+          </div>
+        </header>
+
+        <div class="studio-viewport-canvas-wrapper">
+          <StudioPreview sceneId={studio.sceneId} class="studio-viewport-preview" />
+        </div>
+
+        <footer class="studio-viewport-card__telemetry-footer">
+          <div class="studio-telemetry-metrics">
+            <div class="studio-telemetry-metric">
+              <span class="studio-telemetry-metric__label">CLOCK / RATE</span>
+              <span class="studio-telemetry-metric__val">{telemetryInfo.clock}</span>
+            </div>
+            <div class="studio-telemetry-metric">
+              <span class="studio-telemetry-metric__label">BUS PROTOCOL</span>
+              <span class="studio-telemetry-metric__val">{telemetryInfo.bus}</span>
+            </div>
+            <div class="studio-telemetry-metric">
+              <span class="studio-telemetry-metric__label">EXECUTION STATE</span>
+              <span class="studio-telemetry-metric__val">{studio.status.toUpperCase()} // SYNCHRONIZED</span>
+            </div>
+          </div>
+        </footer>
+      </div>
+    </div>
+  </section>
+
+  <!-- Technical Architecture & Specifications -->
+  <section class="studio-specs-section py-20">
+    <div class="container">
+      <header class="section-head">
+        <p class="section-head__eyebrow">SYSTEM SPECIFICATION</p>
+        <h2 class="section-head__title">Architecture & Execution Stack</h2>
+        <p class="section-head__lead">
+          Detailed technical parameters, hardware-software bridges, and kernel primitives powering {studio.title}.
+        </p>
+      </header>
+
+      <div class="studio-specs-grid">
+        <article class="spec-card">
+          <header class="spec-card__header">
+            <SignalBadge protocol="CORE" status="operational" />
+            <h3 class="spec-card__title">Execution Kernel</h3>
+          </header>
+          <p class="spec-card__description">
+            High-performance mathematical models and execution pipelines compiled to portable binaries for sub-millisecond calculation.
+          </p>
+          <div class="spec-card__scope">
+            <ScopeGauge
+              variant={telemetryInfo.gaugeType}
+              label="Throughput / Telemetry"
+              value={telemetryInfo.value}
+              unit={telemetryInfo.unit}
+              channel={`SYS-0${studio.order}`}
+            />
+          </div>
+        </article>
+
+        <article class="spec-card">
+          <header class="spec-card__header">
+            <SignalBadge protocol="BRIDGE" status="streaming" />
+            <h3 class="spec-card__title">Data & Bus Protocols</h3>
+          </header>
+          <p class="spec-card__description">
+            Deterministic protocol bridges connecting client memory space, streaming telemetry queues, and physical interfaces.
+          </p>
+          <ul class="studio-tech-list" aria-label="Technologies used">
+            {
+              studio.technologies.map((tech) => (
+                <li class="studio-tech-badge">{tech}</li>
+              ))
+            }
+          </ul>
+        </article>
+
+        {
+          studio.relationships && (
+            <article class="spec-card">
+              <header class="spec-card__header">
+                <SignalBadge protocol="GRAPH" status="operational" />
+                <h3 class="spec-card__title">Knowledge & System Graph</h3>
+              </header>
+              <div class="studio-rel-stack">
+                <div class="studio-rel-item">
+                  <span class="studio-rel-label">EXPLORES:</span>
+                  <span class="studio-rel-val">{studio.relationships.explores}</span>
+                </div>
+                <div class="studio-rel-item">
+                  <span class="studio-rel-label">CONNECTS:</span>
+                  <span class="studio-rel-val">{studio.relationships.connects.join(" · ")}</span>
+                </div>
+                {
+                  studio.relationships.relatedStudio && (
+                    <div class="studio-rel-item">
+                      <span class="studio-rel-label">COMPANION STUDIO:</span>
+                      <span class="studio-rel-val">{studio.relationships.relatedStudio}</span>
+                    </div>
+                  )
+                }
+              </div>
+            </article>
+          )
+        }
+      </div>
+    </div>
+  </section>
+
+  <!-- Related Thinking & Research Publications -->
+  {
+    relatedPosts.length > 0 && (
+      <section class="studio-thinking-section py-20">
+        <div class="container">
+          <header class="section-head">
+            <p class="section-head__eyebrow">RESEARCH CONDUIT</p>
+            <h2 class="section-head__title">Related Thinking & Publications</h2>
+            <p class="section-head__lead">
+              Theoretical foundations, empirical notes, and system architectural essays linked to {studio.title}.
+            </p>
+          </header>
+
+          <div class="studio-thinking-grid">
+            {
+              relatedPosts.map((post) => (
+                <a href={`/thinking/${post.slug}`} class="studio-thinking-card">
+                  <div class="studio-thinking-card__header">
+                    <span class="studio-thinking-card__tag">RESEARCH NOTE</span>
+                    <span class="studio-thinking-card__time">{post.readingTime} min read</span>
+                  </div>
+                  <h3 class="studio-thinking-card__title">{post.title}</h3>
+                  <p class="studio-thinking-card__desc">{post.description}</p>
+                  <div class="studio-thinking-card__footer">
+                    <span>Read Publication</span>
+                    <span aria-hidden="true">&rarr;</span>
+                  </div>
+                </a>
+              ))
+            }
+          </div>
+        </div>
+      </section>
+    )
+  }
+
+  <!-- Other Explorations & Studios -->
+  {
+    otherStudios.length > 0 && (
+      <section class="other-studios-section py-20">
+        <div class="container">
+          <header class="section-head">
+            <p class="section-head__eyebrow">THE SREDSOL ECOSYSTEM</p>
+            <h2 class="section-head__title">Explore Companion Systems</h2>
+            <p class="section-head__lead">
+              Continue exploring our interconnected computational environments and scientific instruments.
+            </p>
+          </header>
+
+          <div class="other-studios-grid">
+            {
+              otherStudios.slice(0, 3).map((item) => (
+                <ExplorationCard
+                  title={item.title}
+                  slug={item.slug}
+                  domain={item.domain}
+                  domainLabel={item.domainLabel}
+                  status={item.status}
+                  description={item.description}
+                  actionPipeline={item.actionPipeline}
+                  sceneId={item.sceneId}
+                  technologies={item.technologies}
+                  relationships={item.relationships}
+                  href={`/explorations/${item.slug}`}
+                />
+              ))
+            }
+          </div>
+        </div>
+      </section>
+    )
+  }
+
+  <LabCTA locale={locale} />
+</MarketingLayout>
+
+<style>
+  .studio-hero {
+    position: relative;
+    border-bottom: 1px solid var(--border);
+    text-align: center;
+  }
+
+  .studio-breadcrumb {
+    display: flex;
+    justify-content: center;
+    margin-bottom: var(--space-lg);
+  }
+
+  .studio-breadcrumb__list {
+    display: flex;
+    align-items: center;
+    gap: var(--space-xs);
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    font-family: var(--font-mono);
+    font-size: var(--font-size-xs);
+    color: var(--muted-foreground);
+  }
+
+  .studio-breadcrumb__link {
+    color: var(--muted-foreground);
+    text-decoration: none;
+    transition: color var(--duration-fast) var(--ease-default);
+  }
+
+  .studio-breadcrumb__link:hover {
+    color: var(--foreground);
+  }
+
+  .studio-breadcrumb__sep {
+    opacity: 0.4;
+  }
+
+  .studio-breadcrumb__item--current {
+    color: var(--foreground);
+    font-weight: 600;
+  }
+
+  .studio-hero__meta {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-md);
+    margin-bottom: var(--space-md);
+    flex-wrap: wrap;
+  }
+
+  .studio-hero__telemetry-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-xs);
+    font-family: var(--font-mono);
+    font-size: 0.6875rem;
+    color: var(--muted-foreground);
+    padding: var(--space-2xs) var(--space-sm);
+    border-radius: var(--radius-full);
+    border: 1px solid var(--border);
+    background: color-mix(in srgb, var(--card) 40%, transparent);
+  }
+
+  .studio-hero__telemetry-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: var(--radius-full);
+    background: var(--color-brand-primary);
+  }
+
+  .studio-hero__title {
+    margin: 0;
+    font-size: clamp(2.25rem, 5vw, 4rem);
+    font-family: var(--font-heading);
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    color: var(--foreground);
+  }
+
+  .studio-hero__lead {
+    margin: var(--space-md) auto 0;
+    font-size: clamp(1.05rem, 1.6vw, 1.25rem);
+    color: var(--muted-foreground);
+    line-height: 1.6;
+    max-width: 44rem;
+  }
+
+  .studio-hero__pipeline {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-sm);
+    margin-top: var(--space-lg);
+    padding: var(--space-xs) var(--space-md);
+    border-radius: var(--radius-md);
+    background: color-mix(in srgb, var(--card) 60%, transparent);
+    border: 1px solid var(--border);
+    font-family: var(--font-mono);
+    font-size: var(--font-size-xs);
+    max-width: 100%;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  .studio-hero__pipeline-label {
+    color: var(--muted-foreground);
+    font-weight: 700;
+    letter-spacing: 0.05em;
+  }
+
+  .studio-hero__pipeline-val {
+    color: var(--color-brand-primary);
+    font-weight: 600;
+  }
+
+  .studio-hero__actions {
+    display: flex;
+    justify-content: center;
+    gap: var(--space-md);
+    margin-top: var(--space-xl);
+    flex-wrap: wrap;
+  }
+
+  /* Viewport Card */
+  .studio-viewport-section {
+    border-bottom: 1px solid var(--border);
+    background: var(--color-bg-secondary);
+  }
+
+  .studio-viewport-card {
+    border-radius: var(--radius-xl);
+    border: 1px solid var(--border);
+    background: var(--card);
+    overflow: hidden;
+    box-shadow: var(--shadow-lg);
+  }
+
+  .studio-viewport-card__hud-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: var(--space-sm) var(--space-lg);
+    background: color-mix(in srgb, var(--background) 80%, transparent);
+    border-bottom: 1px solid var(--border);
+  }
+
+  .studio-viewport-card__hud-left {
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+  }
+
+  .studio-viewport-card__hud-id {
+    font-family: var(--font-mono);
+    font-size: var(--font-size-xs);
+    color: var(--muted-foreground);
+    letter-spacing: 0.05em;
+  }
+
+  .studio-viewport-canvas-wrapper {
+    position: relative;
+    width: 100%;
+    min-height: 24rem;
+    max-height: 34rem;
+    display: flex;
+    background: var(--background);
+  }
+
+  :global(.studio-viewport-preview) {
+    width: 100%;
+    height: 28rem !important;
+    border: none !important;
+    border-radius: 0 !important;
+  }
+
+  .studio-viewport-card__telemetry-footer {
+    padding: var(--space-md) var(--space-lg);
+    background: color-mix(in srgb, var(--background) 90%, transparent);
+    border-top: 1px solid var(--border);
+  }
+
+  .studio-telemetry-metrics {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: var(--space-md);
+  }
+
+  @media (min-width: 48rem) {
+    .studio-telemetry-metrics {
+      grid-template-columns: repeat(3, 1fr);
+    }
+  }
+
+  .studio-telemetry-metric {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2xs);
+  }
+
+  .studio-telemetry-metric__label {
+    font-family: var(--font-mono);
+    font-size: 0.6875rem;
+    font-weight: 700;
+    color: var(--muted-foreground);
+    letter-spacing: 0.05em;
+  }
+
+  .studio-telemetry-metric__val {
+    font-family: var(--font-mono);
+    font-size: var(--font-size-sm);
+    font-weight: 600;
+    color: var(--foreground);
+  }
+
+  /* Specs Grid */
+  .studio-specs-section {
+    border-bottom: 1px solid var(--border);
+  }
+
+  .studio-specs-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: var(--space-xl);
+    margin-top: var(--space-2xl);
+  }
+
+  @media (min-width: 56rem) {
+    .studio-specs-grid {
+      grid-template-columns: repeat(3, 1fr);
+    }
+  }
+
+  .spec-card {
+    display: flex;
+    flex-direction: column;
+    padding: var(--space-xl);
+    border-radius: var(--radius-lg);
+    border: 1px solid var(--border);
+    background: var(--card);
+  }
+
+  .spec-card__header {
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+    margin-bottom: var(--space-md);
+  }
+
+  .spec-card__title {
+    margin: 0;
+    font-family: var(--font-heading);
+    font-size: var(--font-size-lg);
+    font-weight: 700;
+    color: var(--foreground);
+  }
+
+  .spec-card__description {
+    margin: 0 0 var(--space-lg);
+    font-size: var(--font-size-sm);
+    line-height: 1.6;
+    color: var(--muted-foreground);
+    flex-grow: 1;
+  }
+
+  .spec-card__scope {
+    margin-top: auto;
+  }
+
+  .studio-tech-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-xs);
+    list-style: none;
+    padding: 0;
+    margin: auto 0 0;
+  }
+
+  .studio-tech-badge {
+    font-family: var(--font-mono);
+    font-size: var(--font-size-xs);
+    color: var(--foreground);
+    padding: var(--space-2xs) var(--space-sm);
+    border-radius: var(--radius-sm);
+    background: color-mix(in srgb, var(--foreground) 6%, transparent);
+    border: 1px solid var(--border);
+  }
+
+  .studio-rel-stack {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-sm);
+    margin-top: auto;
+  }
+
+  .studio-rel-item {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    padding: var(--space-xs) var(--space-sm);
+    border-radius: var(--radius-sm);
+    background: color-mix(in srgb, var(--foreground) 4%, transparent);
+    border: 1px solid var(--border);
+  }
+
+  .studio-rel-label {
+    font-family: var(--font-mono);
+    font-size: 0.6875rem;
+    font-weight: 700;
+    color: var(--muted-foreground);
+    letter-spacing: 0.05em;
+  }
+
+  .studio-rel-val {
+    font-family: var(--font-mono);
+    font-size: var(--font-size-xs);
+    font-weight: 600;
+    color: var(--foreground);
+  }
+
+  /* Thinking Grid */
+  .studio-thinking-section {
+    border-bottom: 1px solid var(--border);
+    background: var(--color-bg-secondary);
+  }
+
+  .studio-thinking-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: var(--space-lg);
+    margin-top: var(--space-2xl);
+  }
+
+  @media (min-width: 48rem) {
+    .studio-thinking-grid {
+      grid-template-columns: repeat(auto-fit, minmax(20rem, 1fr));
+    }
+  }
+
+  .studio-thinking-card {
+    display: flex;
+    flex-direction: column;
+    padding: var(--space-xl);
+    border-radius: var(--radius-lg);
+    border: 1px solid var(--border);
+    background: var(--card);
+    text-decoration: none;
+    transition: all var(--duration-fast) var(--ease-default);
+  }
+
+  .studio-thinking-card:hover {
+    border-color: color-mix(in srgb, var(--color-brand-primary) 50%, var(--border));
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+  }
+
+  .studio-thinking-card__header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: var(--space-sm);
+  }
+
+  .studio-thinking-card__tag {
+    font-family: var(--font-mono);
+    font-size: 0.6875rem;
+    font-weight: 700;
+    color: var(--color-brand-primary);
+    letter-spacing: 0.05em;
+  }
+
+  .studio-thinking-card__time {
+    font-family: var(--font-mono);
+    font-size: var(--font-size-xs);
+    color: var(--muted-foreground);
+  }
+
+  .studio-thinking-card__title {
+    margin: 0 0 var(--space-xs);
+    font-family: var(--font-heading);
+    font-size: var(--font-size-lg);
+    font-weight: 700;
+    color: var(--foreground);
+  }
+
+  .studio-thinking-card__desc {
+    margin: 0 0 var(--space-lg);
+    font-size: var(--font-size-sm);
+    line-height: 1.6;
+    color: var(--muted-foreground);
+    flex-grow: 1;
+  }
+
+  .studio-thinking-card__footer {
+    display: flex;
+    align-items: center;
+    gap: var(--space-xs);
+    font-family: var(--font-mono);
+    font-size: var(--font-size-xs);
+    font-weight: 700;
+    color: var(--color-brand-primary);
+  }
+
+  /* Other Studios */
+  .other-studios-section {
+    border-bottom: 1px solid var(--border);
+  }
+
+  .other-studios-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: var(--space-xl);
+    margin-top: var(--space-2xl);
+  }
+
+  @media (min-width: 52rem) {
+    .other-studios-grid {
+      grid-template-columns: repeat(3, 1fr);
+    }
+  }
+</style>

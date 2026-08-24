@@ -1,0 +1,39 @@
+---
+import { siteConfig } from "../../../../config/site.config";
+
+export interface Props {
+  href?: string;
+}
+
+const { href = "/" } = Astro.props as Props;
+---
+
+<a href={href} class="ui-logo" aria-label={siteConfig.name}>
+  <img
+    src="/logo.svg"
+    alt=""
+    width="32"
+    height="32"
+    class="ui-logo__img"
+    loading="eager"
+    decoding="async"
+    aria-hidden="true"
+  />
+</a>
+
+<style>
+  .ui-logo {
+    display: inline-flex;
+    align-items: center;
+    text-decoration: none;
+    color: inherit;
+  }
+
+  .ui-logo__img {
+    width: 2rem;
+    height: 2rem;
+    object-fit: contain;
+    border-radius: var(--radius-sm);
+  }
+</style>
+

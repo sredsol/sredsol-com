@@ -1,0 +1,415 @@
+---
+import { cn } from "../../../../lib/cn";
+import Card from "../Card/Card.astro";
+import Badge from "../Badge/Badge.astro";
+import SignalBadge from "../SignalBadge/SignalBadge.astro";
+import StudioPreview from "../../../interactive/StudioPreview.astro";
+
+export interface Props {
+  title: string;
+  slug: string;
+  domain: "computation" | "physical" | "observation" | "learning";
+  domainLabel: string;
+  status?: "active" | "lab" | "archived";
+  description: string;
+  actionPipeline?: string;
+  sceneId?: string;
+  technologies?: string[];
+  relationships?: {
+    explores?: string;
+    connects?: string[];
+    relatedStudio?: string;
+  };
+  relatedArticleTitle?: string;
+  relatedArticleSlug?: string;
+  variant?: "default" | "featured";
+  href?: string;
+  class?: string;
+}
+
+const {
+  title,
+  slug,
+  domain,
+  domainLabel,
+  status = "active",
+  description,
+  actionPipeline,
+  sceneId,
+  technologies = [],
+  relationships,
+  relatedArticleTitle,
+  relatedArticleSlug,
+  variant = "default",
+  href = `/explorations/${slug}`,
+  class: className,
+} = Astro.props as Props;
+
+const telemetryTag = {
+  physical: "400kHz BUS // ONLINE",
+  learning: "SQLITE KERNEL // SYNCED",
+  observation: "16-CH TELEMETRY // STREAMING",
+  computation: "WASM MATRIX // ACTIVE",
+}[domain];
+---
+
+<Card
+  hover
+  class={cn(
+    "exploration-card",
+    `exploration-card--${domain}`,
+    variant === "featured" && "exploration-card--featured",
+    className
+  )}
+  data-slug={slug}
+>
+  <div slot="header" class="exploration-card__header">
+    <div class="exploration-card__status-bar">
+      <div class="exploration-card__status-left">
+        <Badge variant="outline" size="sm">{domainLabel}</Badge>
+        <span class="exploration-card__telemetry-chip">
+          <span class="exploration-card__chip-dot"></span>
+          <span>{telemetryTag}</span>
+        </span>
+      </div>
+      <SignalBadge status={status === "active" ? "operational" : "lab"} variant="minimal" />
+    </div>
+
+    <div class="exploration-card__preview">
+      <slot name="preview">
+        {
+          sceneId ? (
+            <StudioPreview sceneId={sceneId} />
+          ) : (
+            <div class="exploration-card__fallback-preview">
+              <div class="exploration-card__grid-mesh" />
+            </div>
+          )
+        }
+      </slot>
+    </div>
+  </div>
+
+  <div class="exploration-card__content">
+    <h3 class="exploration-card__title">
+      <a href={href} class="exploration-card__link">
+        {title}
+      </a>
+    </h3>
+
+    {actionPipeline && (
+      <div class="exploration-card__pipeline">
+        <span class="exploration-card__pipeline-label">METHODOLOGY:</span>
+        <span class="exploration-card__pipeline-val">{actionPipeline}</span>
+      </div>
+    )}
+
+    <p class="exploration-card__description">{description}</p>
+
+    {relationships && (
+      <div class="exploration-card__relationships">
+        {relationships.explores && (
+          <div class="exploration-card__rel-row">
+            <span class="exploration-card__rel-label">EXPLORES:</span>
+            <span class="exploration-card__rel-val">{relationships.explores}</span>
+          </div>
+        )}
+        {relationships.connects && relationships.connects.length > 0 && (
+          <div class="exploration-card__rel-row">
+            <span class="exploration-card__rel-label">CONNECTS:</span>
+            <span class="exploration-card__rel-val">{relationships.connects.join(" · ")}</span>
+          </div>
+        )}
+        {relationships.relatedStudio && (
+          <div class="exploration-card__rel-row">
+            <span class="exploration-card__rel-label">RELATED:</span>
+            <span class="exploration-card__rel-val">{relationships.relatedStudio}</span>
+          </div>
+        )}
+      </div>
+    )}
+
+    {technologies.length > 0 && (
+      <ul class="exploration-card__tags" aria-label="Technologies">
+        {technologies.map((tech) => (
+          <li class="exploration-card__tag">{tech}</li>
+        ))}
+      </ul>
+    )}
+
+    {relatedArticleSlug && (
+      <div class="exploration-card__related">
+        <span class="exploration-card__related-label">RESEARCH:</span>
+        <a href={`/thinking/${relatedArticleSlug}`} class="exploration-card__related-link">
+          <span>{relatedArticleTitle || "Explore related research notes"}</span>
+          <span aria-hidden="true">&nearr;</span>
+        </a>
+      </div>
+    )}
+  </div>
+
+  <div slot="footer" class="exploration-card__footer">
+    <a href={href} class="exploration-card__action">
+      <span>Enter Studio Environment</span>
+      <span class="exploration-card__arrow" aria-hidden="true">&rarr;</span>
+    </a>
+  </div>
+</Card>
+
+<style>
+  .exploration-card {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    border: 1px solid var(--border);
+    background: var(--card);
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .exploration-card:hover {
+    border-color: var(--color-brand-primary);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+  }
+
+  .exploration-card__header {
+    border-bottom: 1px solid var(--border);
+  }
+
+  .exploration-card__status-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.6rem 0.85rem;
+    border-bottom: 1px solid var(--border);
+    background: var(--color-bg-secondary);
+  }
+
+  .exploration-card__status-left {
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+  }
+
+  .exploration-card__telemetry-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    font-family: var(--font-mono);
+    font-size: 0.6875rem;
+    color: var(--color-brand-primary);
+    background: color-mix(in srgb, var(--color-brand-primary) 10%, transparent);
+    padding: 0.15rem 0.5rem;
+    border-radius: var(--radius-sm);
+    border: 1px solid color-mix(in srgb, var(--color-brand-primary) 25%, transparent);
+  }
+
+  .exploration-card__chip-dot {
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    background: var(--color-brand-primary);
+    box-shadow: 0 0 6px var(--color-brand-primary);
+  }
+
+  .exploration-card__preview {
+    position: relative;
+    height: 12.5rem;
+    background: color-mix(in srgb, var(--background) 92%, black);
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .exploration-card__fallback-preview {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+  }
+
+  .exploration-card__grid-mesh {
+    position: absolute;
+    inset: 0;
+    background-image:
+      linear-gradient(to right, color-mix(in srgb, var(--foreground) 6%, transparent) 1px, transparent 1px),
+      linear-gradient(to bottom, color-mix(in srgb, var(--foreground) 6%, transparent) 1px, transparent 1px);
+    background-size: 20px 20px;
+  }
+
+  .exploration-card__content {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    padding: var(--space-lg);
+  }
+
+  .exploration-card__title {
+    margin: 0;
+    font-size: 1.25rem;
+    font-family: var(--font-heading);
+    font-weight: var(--font-weight-bold);
+  }
+
+  .exploration-card__link {
+    color: var(--foreground);
+    text-decoration: none;
+  }
+
+  .exploration-card__link:focus-visible {
+    outline: 2px solid var(--ring);
+    outline-offset: 2px;
+  }
+
+  .exploration-card__pipeline {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+    margin: 0.45rem 0 0;
+    font-family: var(--font-mono);
+    font-size: 0.6875rem;
+  }
+
+  .exploration-card__pipeline-label {
+    color: var(--muted-foreground);
+    font-weight: var(--font-weight-bold);
+  }
+
+  .exploration-card__pipeline-val {
+    color: var(--color-brand-primary);
+  }
+
+  .exploration-card__description {
+    margin: 0.6rem 0 0;
+    color: var(--muted-foreground);
+    font-size: 0.875rem;
+    line-height: 1.6;
+    flex: 1;
+  }
+
+  .exploration-card__relationships {
+    margin: 0.75rem 0 0;
+    padding: 0.5rem 0.65rem;
+    border-radius: var(--radius-sm);
+    background: color-mix(in srgb, var(--muted) 40%, transparent);
+    border: 1px solid color-mix(in srgb, var(--border) 60%, transparent);
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+    font-family: var(--font-mono);
+    font-size: 0.6875rem;
+  }
+
+  .exploration-card__rel-row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 0.4rem;
+  }
+
+  .exploration-card__rel-label {
+    color: var(--muted-foreground);
+    font-weight: var(--font-weight-bold);
+    min-width: 4.5rem;
+    letter-spacing: 0.02em;
+  }
+
+  .exploration-card__rel-val {
+    color: var(--foreground);
+  }
+
+
+  .exploration-card__tags {
+    list-style: none;
+    margin: 0.85rem 0 0;
+    padding: 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.35rem;
+  }
+
+  .exploration-card__tag {
+    font-family: var(--font-mono);
+    font-size: 0.6875rem;
+    padding: 0.15rem 0.45rem;
+    border-radius: var(--radius-sm);
+    background: var(--muted);
+    color: var(--foreground);
+    border: 1px solid var(--border);
+  }
+
+  .exploration-card__related {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+    margin-top: 0.85rem;
+    padding-top: 0.65rem;
+    border-top: 1px dashed var(--border);
+    font-family: var(--font-mono);
+    font-size: 0.6875rem;
+  }
+
+  .exploration-card__related-label {
+    color: var(--muted-foreground);
+    font-weight: var(--font-weight-bold);
+  }
+
+  .exploration-card__related-link {
+    color: var(--foreground);
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    transition: color 0.15s ease;
+  }
+
+  .exploration-card__related-link:hover {
+    color: var(--color-brand-primary);
+  }
+
+  .exploration-card__footer {
+    padding: 0.65rem 0.85rem;
+    border-top: 1px solid var(--border);
+    background: var(--color-bg-secondary);
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+  }
+
+  .exploration-card__action {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    font-weight: var(--font-weight-bold);
+    color: var(--color-brand-primary);
+    text-decoration: none;
+    transition: color 0.15s ease;
+  }
+
+  .exploration-card__action:hover {
+    color: var(--color-brand-accent);
+  }
+
+  .exploration-card__arrow {
+    transition: transform 0.15s ease;
+  }
+
+  .exploration-card:hover .exploration-card__arrow {
+    transform: translateX(3px);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .exploration-card,
+    .exploration-card__arrow {
+      transition: none;
+      transform: none;
+    }
+  }
+</style>

@@ -1,0 +1,171 @@
+---
+import MarketingLayout from "../layouts/MarketingLayout.astro";
+import { GridBackground } from "../components/ui/layout";
+import { NodeIndicator, ScopeGauge, SignalBadge } from "../components/ui/data-display";
+import { SystemsLayerDiagram, LabCTA } from "../components/sections";
+import { siteConfig } from "../config/site.config";
+
+const locale = (Astro.currentLocale || "en") as "en";
+---
+
+<MarketingLayout
+  title={`Technology & Architecture — ${siteConfig.name}`}
+  description="The architectural stack, execution kernels, and hardware interfaces powering SREDSOL computational systems."
+  locale={locale}
+  path="/technology"
+>
+  <!-- Page Header -->
+  <section class="page-header py-16">
+    <GridBackground variant="crosshairs" glow glowPosition="top" mask="radial" />
+    <div class="container">
+      <div class="page-header__meta">
+        <NodeIndicator label="ARCHITECTURE // STACK & STANDARDS" code="TECH-01" status="active" size="sm" />
+
+      </div>
+      <h1 class="page-header__title">Systems & Architecture</h1>
+      <p class="page-header__lead">
+        A unified architecture bridging compiled WebAssembly kernels, browser-native SQLite, hardware bus protocols, and reactive spatial UI.
+      </p>
+    </div>
+  </section>
+
+  <!-- Vertical Systems Stack -->
+  <SystemsLayerDiagram locale={locale} />
+
+  <!-- Core Execution Specs -->
+  <section class="tech-specs py-20">
+    <div class="container">
+      <header class="section-head">
+        <p class="section-head__eyebrow">KERNEL SPECIFICATIONS</p>
+        <h2 class="section-head__title">Computational Engines & Runtimes</h2>
+        <p class="section-head__lead">
+          Built on open, portable foundations with zero proprietary lock-in.
+        </p>
+      </header>
+
+      <div class="tech-specs__grid">
+        <article class="spec-card">
+          <header class="spec-card__header">
+            <SignalBadge protocol="WASM" status="operational" />
+            <h3 class="spec-card__title">WebAssembly Execution Kernels</h3>
+          </header>
+          <p class="spec-card__description">
+            High-performance mathematical models and numerical algorithms compiled to WASM for sub-millisecond deterministic calculation.
+          </p>
+          <div class="spec-card__scope">
+            <ScopeGauge variant="waveform" label="Execution Throughput" value="60" unit="FPS" channel="WASM-01" />
+          </div>
+        </article>
+
+        <article class="spec-card">
+          <header class="spec-card__header">
+            <SignalBadge protocol="SQLITE" status="operational" />
+            <h3 class="spec-card__title">Embedded Client SQLite</h3>
+          </header>
+          <p class="spec-card__description">
+            Offline-first persistent state storage via in-browser SQLite with local indexing and zero server latency for LearningOS.
+          </p>
+          <div class="spec-card__scope">
+            <ScopeGauge variant="dial" label="Local IO Latency" value="0.8" unit="ms" channel="SQL-02" />
+          </div>
+        </article>
+
+        <article class="spec-card">
+          <header class="spec-card__header">
+            <SignalBadge protocol="I2C / SPI" status="streaming" />
+            <h3 class="spec-card__title">Hardware Telemetry Bus</h3>
+          </header>
+          <p class="spec-card__description">
+            Bidirectional streaming bridges connecting virtual software instrumentation directly to microcontrollers and sensor arrays.
+          </p>
+          <div class="spec-card__scope">
+            <ScopeGauge variant="frequency" label="Bus Clock Rate" value="400" unit="kHz" channel="BUS-03" />
+          </div>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <LabCTA locale={locale} />
+</MarketingLayout>
+
+<style>
+  .page-header {
+    position: relative;
+    border-bottom: 1px solid var(--border);
+    text-align: center;
+  }
+
+  .page-header__meta {
+    display: flex;
+    justify-content: center;
+    margin-bottom: var(--space-md);
+  }
+
+  .page-header__title {
+    margin: 0;
+    font-size: clamp(2rem, 4.5vw, 3.5rem);
+    font-family: var(--font-heading);
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    color: var(--foreground);
+  }
+
+  .page-header__lead {
+    margin: var(--space-md) auto 0;
+    font-size: clamp(1rem, 1.5vw, 1.15rem);
+    color: var(--muted-foreground);
+    line-height: 1.6;
+    max-width: 38rem;
+  }
+
+  .tech-specs {
+    position: relative;
+    border-bottom: 1px solid var(--border);
+    background: var(--color-bg-secondary);
+  }
+
+  .tech-specs__grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(18rem, 1fr));
+    gap: var(--space-xl);
+    margin-top: var(--space-2xl);
+  }
+
+  .spec-card {
+    display: flex;
+    flex-direction: column;
+    padding: var(--space-lg);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-xl);
+    background: var(--card);
+    box-shadow: var(--shadow-sm);
+  }
+
+  .spec-card__header {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+  }
+
+  .spec-card__title {
+    margin: 0;
+    font-size: 1.15rem;
+    font-family: var(--font-heading);
+    font-weight: 700;
+    color: var(--foreground);
+  }
+
+  .spec-card__description {
+    margin: 0.5rem 0 0;
+    font-size: 0.875rem;
+    color: var(--muted-foreground);
+    line-height: 1.6;
+    flex: 1;
+  }
+
+  .spec-card__scope {
+    margin-top: var(--space-lg);
+  }
+</style>

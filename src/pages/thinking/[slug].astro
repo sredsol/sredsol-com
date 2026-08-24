@@ -1,0 +1,76 @@
+---
+import BlogLayout from "../../layouts/BlogLayout.astro";
+import { PortableText } from "emdash/ui";
+import PortableBlock from "../../components/blog/PortableBlock.astro";
+import { getPostEntry } from "../../lib/cms";
+import { getRelatedExplorations } from "../../emdash/sredsol-relationships";
+import { getExplorationBySlug } from "../../lib/explorations";
+import { ExplorationCard } from "../../components/ui/data-display";
+
+const { slug } = Astro.params as { slug: string };
+const detail = await getPostEntry(slug);
+if (!detail) return new Response(null, { status: 404 });
+
+const { post, content, headings } = detail;
+const locale = "en";
+
+// Inject matching anchor ids on headings so the table of contents links work.
+const portableComponents = {
+  block: PortableBlock,
+};
+
+const relatedSlugs = getRelatedExplorations(slug);
+const relatedExplorations = (
+  await Promise.all(relatedSlugs.map((s) => getExplorationBySlug(s)))
+).filter(Boolean);
+---
+
+<BlogLayout post={post} locale={locale} headings={headings}>
+  <article class="thinking-content">
+    <PortableText value={content} components={portableComponents} />
+  </article>
+
+  {
+    relatedExplorations.length > 0 && (
+      <aside class="related-explorations mt-16 pt-8 border-t border-border">
+        <h3 class="related-explorations__title">RELATED SREDSOL STUDIOS & INSTRUMENTS</h3>
+        <div class="related-explorations__grid mt-6">
+          {relatedExplorations.map((exp) => (
+            <ExplorationCard
+              title={exp!.title}
+              slug={exp!.slug}
+              domain={exp!.domain}
+              domainLabel={exp!.domainLabel}
+              status={exp!.status}
+              description={exp!.description}
+              sceneId={exp!.sceneId}
+              technologies={exp!.technologies}
+            />
+          ))}
+        </div>
+      </aside>
+    )
+  }
+</BlogLayout>
+
+<style>
+  .thinking-content {
+    font-size: 1.0625rem;
+    line-height: 1.75;
+    color: var(--foreground);
+  }
+
+  .related-explorations__title {
+    font-family: var(--font-mono);
+    font-size: 0.8125rem;
+    font-weight: 700;
+    color: var(--muted-foreground);
+    letter-spacing: 0.05em;
+  }
+
+  .related-explorations__grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(18rem, 1fr));
+    gap: var(--space-lg);
+  }
+</style>

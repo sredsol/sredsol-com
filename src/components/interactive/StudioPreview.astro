@@ -1,0 +1,470 @@
+---
+export interface Props {
+  sceneId: string;
+  class?: string;
+}
+
+const { sceneId, class: className } = Astro.props as Props;
+---
+
+<div class={`studio-preview ${className || ""}`} data-studio-preview data-scene={sceneId}>
+  <canvas class="studio-preview__canvas"></canvas>
+  <div class="studio-preview__hud">
+    <span class="studio-preview__badge">{sceneId}</span>
+    <span class="studio-preview__hint" aria-hidden="true">⇄ INTERACTIVE</span>
+  </div>
+</div>
+
+<script>
+  function getThemeColors() {
+    const root = document.documentElement;
+    const style = getComputedStyle(root);
+    const isDark = root.classList.contains("dark");
+
+    return {
+      brand: style.getPropertyValue("--color-brand-primary").trim() || (isDark ? "#5b73ff" : "#3042e6"),
+      accent: style.getPropertyValue("--color-brand-accent").trim() || "#00e5ff",
+      foreground: style.getPropertyValue("--foreground").trim() || (isDark ? "#f0f4fc" : "#0f172a"),
+      muted: style.getPropertyValue("--muted-foreground").trim() || (isDark ? "#8b9bb4" : "#64748b"),
+      isDark,
+    };
+  }
+
+  function initStudioPreviews() {
+    const previews = document.querySelectorAll<HTMLElement>("[data-studio-preview]");
+
+    previews.forEach((preview) => {
+      if (preview.dataset.initialized) return;
+      preview.dataset.initialized = "true";
+
+      const canvas = preview.querySelector<HTMLCanvasElement>(".studio-preview__canvas");
+      if (!canvas) return;
+
+      const rawCtx = canvas.getContext("2d");
+      if (!rawCtx) return;
+      const ctx: CanvasRenderingContext2D = rawCtx;
+      const renderCanvas: HTMLCanvasElement = canvas;
+
+      const sceneId = preview.dataset.scene || "CIRCUIT-SIM-01";
+      const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+      let width = 0;
+      let height = 0;
+      const mouse = { x: -1000, y: -1000, active: false, clickPulse: 0 };
+      let rotationX = 0;
+      let rotationY = 0;
+
+      function resize() {
+        const rect = preview.getBoundingClientRect();
+        width = rect.width;
+        height = rect.height;
+        const dpr = Math.min(window.devicePixelRatio || 1, 2);
+        renderCanvas.width = width * dpr;
+        renderCanvas.height = height * dpr;
+        ctx.scale(dpr, dpr);
+      }
+
+      window.addEventListener("resize", resize, { passive: true });
+      resize();
+
+      preview.addEventListener("pointermove", (e: PointerEvent) => {
+        const rect = preview.getBoundingClientRect();
+        mouse.x = e.clientX - rect.left;
+        mouse.y = e.clientY - rect.top;
+        mouse.active = true;
+      });
+
+      preview.addEventListener("pointerleave", () => {
+        mouse.active = false;
+        mouse.x = -1000;
+        mouse.y = -1000;
+      });
+
+      preview.addEventListener("click", () => {
+        mouse.clickPulse = 1.0;
+      });
+
+      let t = 0;
+
+      function render() {
+        if (!width || !height) {
+          resize();
+        }
+
+        ctx.clearRect(0, 0, width, height);
+        t += 0.025;
+        if (mouse.clickPulse > 0) {
+          mouse.clickPulse = Math.max(0, mouse.clickPulse - 0.04);
+        }
+
+        const colors = getThemeColors();
+
+        // 1. Draw spatial coordinate grid
+        ctx.strokeStyle = "rgba(255, 255, 255, 0.06)";
+        ctx.lineWidth = 1;
+        const gridSize = 20;
+
+        for (let x = 0; x < width; x += gridSize) {
+          ctx.beginPath();
+          ctx.moveTo(x, 0);
+          ctx.lineTo(x, height);
+          ctx.stroke();
+        }
+        for (let y = 0; y < height; y += gridSize) {
+          ctx.beginPath();
+          ctx.moveTo(0, y);
+          ctx.lineTo(width, y);
+          ctx.stroke();
+        }
+
+        if (sceneId === "CIRCUIT-SIM-01") {
+          // --- SCENE 1: PHYSICAL COMPUTING (Circuit Buses, Nodes, and Interactive Pulses) ---
+          const midY = height / 2;
+
+          // Main primary bus line
+          ctx.strokeStyle = colors.brand;
+          ctx.lineWidth = 2.5;
+          ctx.shadowColor = colors.brand;
+          ctx.shadowBlur = 10;
+          ctx.beginPath();
+          ctx.moveTo(24, midY + 12);
+          ctx.lineTo(width * 0.28, midY + 12);
+          ctx.lineTo(width * 0.44, midY - 20);
+          ctx.lineTo(width * 0.70, midY - 20);
+          ctx.lineTo(width * 0.84, midY + 12);
+          ctx.lineTo(width - 24, midY + 12);
+          ctx.stroke();
+
+          // Secondary bus line
+          ctx.strokeStyle = colors.accent;
+          ctx.lineWidth = 1.5;
+          ctx.shadowColor = colors.accent;
+          ctx.shadowBlur = 6;
+          ctx.beginPath();
+          ctx.moveTo(24, midY - 20);
+          ctx.lineTo(width * 0.35, midY - 20);
+          ctx.lineTo(width * 0.50, midY + 20);
+          ctx.lineTo(width * 0.78, midY + 20);
+          ctx.lineTo(width - 24, midY - 20);
+          ctx.stroke();
+
+          // Nodes
+          ctx.shadowBlur = 0;
+          const nodes = [
+            { x: width * 0.28, y: midY + 12, color: colors.brand },
+            { x: width * 0.44, y: midY - 20, color: colors.accent },
+            { x: width * 0.70, y: midY - 20, color: colors.brand },
+            { x: width * 0.84, y: midY + 12, color: colors.accent },
+            { x: width * 0.50, y: midY + 20, color: colors.accent },
+          ];
+
+          for (const n of nodes) {
+            const dist = mouse.active ? Math.hypot(n.x - mouse.x, n.y - mouse.y) : 999;
+            const isNear = dist < 50;
+
+            ctx.fillStyle = isNear ? "#ffffff" : n.color;
+            ctx.beginPath();
+            ctx.arc(n.x, n.y, isNear ? 5.5 : 4, 0, Math.PI * 2);
+            ctx.fill();
+
+            ctx.strokeStyle = isNear ? colors.accent : "rgba(255, 255, 255, 0.7)";
+            ctx.lineWidth = 1;
+            ctx.beginPath();
+            ctx.arc(n.x, n.y, isNear ? 9 : 6.5, 0, Math.PI * 2);
+            ctx.stroke();
+
+            // Wire to mouse cursor if hovering
+            if (isNear && mouse.active) {
+              ctx.strokeStyle = "rgba(0, 229, 255, 0.45)";
+              ctx.lineWidth = 1;
+              ctx.setLineDash([3, 3]);
+              ctx.beginPath();
+              ctx.moveTo(n.x, n.y);
+              ctx.lineTo(mouse.x, mouse.y);
+              ctx.stroke();
+              ctx.setLineDash([]);
+            }
+          }
+
+          // Travelling signal pulse
+          if (!prefersReducedMotion) {
+            const p1 = (t * (mouse.active ? 1.2 : 0.6) + mouse.clickPulse * 2) % 1;
+            const px = 24 + p1 * (width - 48);
+            const py = midY + 12;
+
+            ctx.fillStyle = "#ffffff";
+            ctx.shadowColor = "#ffffff";
+            ctx.shadowBlur = 12;
+            ctx.beginPath();
+            ctx.arc(px, py, 3.5, 0, Math.PI * 2);
+            ctx.fill();
+          }
+
+        } else if (sceneId === "COGNITIVE-GRAPH-02") {
+          // --- SCENE 2: LEARNINGOS (Cognitive Knowledge Graph with Pointer Physics) ---
+          const cx = width / 2;
+          const cy = height / 2;
+          const nodeCount = 8;
+          const baseRadius = Math.min(width, height) * 0.33;
+          ctx.lineWidth = 1.5;
+          ctx.shadowColor = colors.brand;
+          ctx.shadowBlur = 8;
+
+          // Concentric dashed orbital tracks
+          ctx.strokeStyle = "rgba(59, 130, 246, 0.22)";
+          ctx.lineWidth = 1;
+          ctx.setLineDash([4, 4]);
+          ctx.beginPath();
+          ctx.arc(cx, cy, baseRadius * 0.65, 0, Math.PI * 2);
+          ctx.stroke();
+
+          ctx.strokeStyle = "rgba(56, 189, 248, 0.18)";
+          ctx.beginPath();
+          ctx.arc(cx, cy, baseRadius, 0, Math.PI * 2);
+          ctx.stroke();
+          ctx.setLineDash([]);
+
+
+          for (let i = 0; i < nodeCount; i++) {
+            const speed = prefersReducedMotion ? 0 : t * 0.25;
+            const angle = (i / nodeCount) * Math.PI * 2 + speed;
+            let nx = cx + Math.cos(angle) * baseRadius;
+            let ny = cy + Math.sin(angle) * (baseRadius * 0.75);
+
+            // Pointer repulsion/attraction
+            if (mouse.active) {
+              const dx = mouse.x - nx;
+              const dy = mouse.y - ny;
+              const dist = Math.hypot(dx, dy);
+              if (dist < 80 && dist > 1) {
+                nx += (dx / dist) * 18;
+                ny += (dy / dist) * 18;
+              }
+            }
+
+            // Wire to center
+            ctx.strokeStyle = i % 2 === 0 ? "rgba(91, 115, 255, 0.45)" : "rgba(0, 229, 255, 0.35)";
+            ctx.beginPath();
+            ctx.moveTo(cx, cy);
+            ctx.lineTo(nx, ny);
+            ctx.stroke();
+
+            // Ring around node
+            ctx.fillStyle = i % 2 === 0 ? colors.brand : colors.accent;
+            ctx.beginPath();
+            ctx.arc(nx, ny, 4, 0, Math.PI * 2);
+            ctx.fill();
+
+            ctx.strokeStyle = "rgba(255, 255, 255, 0.6)";
+            ctx.lineWidth = 1;
+            ctx.beginPath();
+            ctx.arc(nx, ny, 7, 0, Math.PI * 2);
+            ctx.stroke();
+          }
+
+          // Central Nucleus Node
+          ctx.fillStyle = "#ffffff";
+          ctx.shadowColor = colors.brand;
+          ctx.shadowBlur = 18;
+          ctx.beginPath();
+          ctx.arc(cx, cy, 6.5, 0, Math.PI * 2);
+          ctx.fill();
+
+        } else if (sceneId === "TELEMETRY-STREAM-03") {
+          // --- SCENE 3: OBSERVATION STUDIO (Spectral Waveform Stream with Interactive Frequency Tuning) ---
+          const midY = height / 2;
+          const freqMod = mouse.active ? (mouse.x / width) * 0.08 + 0.02 : 0.05;
+          const ampMod = mouse.active ? (mouse.y / height) * 25 + 10 : 20;
+
+          // Primary stream
+          ctx.strokeStyle = colors.accent;
+          ctx.lineWidth = 2.5;
+          ctx.shadowColor = colors.accent;
+          ctx.shadowBlur = 12;
+          ctx.beginPath();
+
+          for (let x = 0; x < width; x += 2) {
+            const wave1 = Math.sin(x * freqMod + t * 2.2) * ampMod;
+            const wave2 = Math.cos(x * 0.02 - t) * 10;
+            const y = midY + wave1 + wave2;
+
+            if (x === 0) ctx.moveTo(x, y);
+            else ctx.lineTo(x, y);
+          }
+          ctx.stroke();
+
+          // Secondary harmonic stream
+          ctx.strokeStyle = colors.brand;
+          ctx.lineWidth = 1.5;
+          ctx.shadowColor = colors.brand;
+          ctx.shadowBlur = 6;
+          ctx.beginPath();
+
+          for (let x = 0; x < width; x += 2) {
+            const wave1 = Math.sin(x * (freqMod * 1.6) - t * 1.5) * (ampMod * 0.65);
+            const y = midY + wave1;
+
+            if (x === 0) ctx.moveTo(x, y);
+            else ctx.lineTo(x, y);
+          }
+          ctx.stroke();
+
+          // Active probe marker if hovering
+          if (mouse.active) {
+            ctx.strokeStyle = "#ffffff";
+            ctx.lineWidth = 1;
+            ctx.beginPath();
+            ctx.moveTo(mouse.x, 0);
+            ctx.lineTo(mouse.x, height);
+            ctx.stroke();
+
+            ctx.fillStyle = colors.accent;
+            ctx.beginPath();
+            ctx.arc(mouse.x, midY, 4, 0, Math.PI * 2);
+            ctx.fill();
+          }
+
+        } else if (sceneId === "TOPOLOGY-VIZ-04") {
+          // --- SCENE 4: OXIGEO & MATHART (Isometric 3D Rotating Hypercube with Interactive Mouse Drag/Orbit) ---
+          const cx = width / 2;
+          const cy = height / 2;
+          const size = Math.min(width, height) * 0.28;
+
+          if (mouse.active) {
+            rotationY += (mouse.x - cx) * 0.0003;
+            rotationX += (mouse.y - cy) * 0.0003;
+          }
+          const rotY = (prefersReducedMotion ? 0.6 : t * 0.45) + rotationY;
+          const rotX = rotationX + 0.2;
+
+          const cosY = Math.cos(rotY);
+          const sinY = Math.sin(rotY);
+          const cosX = Math.cos(rotX);
+          const sinX = Math.sin(rotX);
+
+          const cubeVerts = [
+            { x: -1, y: -1, z: -1 },
+            { x: 1, y: -1, z: -1 },
+            { x: 1, y: 1, z: -1 },
+            { x: -1, y: 1, z: -1 },
+            { x: -1, y: -1, z: 1 },
+            { x: 1, y: -1, z: 1 },
+            { x: 1, y: 1, z: 1 },
+            { x: -1, y: 1, z: 1 },
+          ];
+
+          const projected = cubeVerts.map((v) => {
+            // Rotate Y
+            const x1 = v.x * cosY - v.z * sinY;
+            const z1 = v.x * sinY + v.z * cosY;
+            // Rotate X
+            const y2 = v.y * cosX - z1 * sinX;
+            const z2 = v.y * sinX + z1 * cosX;
+
+            return {
+              x: cx + x1 * size,
+              y: cy + (y2 * 0.85 + z2 * 0.35) * size,
+            };
+          });
+
+          const edges = [
+            [0, 1], [1, 2], [2, 3], [3, 0],
+            [4, 5], [5, 6], [6, 7], [7, 4],
+            [0, 4], [1, 5], [2, 6], [3, 7],
+          ];
+
+          ctx.strokeStyle = colors.brand;
+          ctx.lineWidth = 2;
+          ctx.shadowColor = colors.brand;
+          ctx.shadowBlur = 10;
+
+          for (const [p1, p2] of edges) {
+            ctx.beginPath();
+            ctx.moveTo(projected[p1].x, projected[p1].y);
+            ctx.lineTo(projected[p2].x, projected[p2].y);
+            ctx.stroke();
+          }
+
+          // Vertices
+          ctx.shadowBlur = 6;
+          for (const p of projected) {
+            ctx.fillStyle = colors.accent;
+            ctx.beginPath();
+            ctx.arc(p.x, p.y, 3.5, 0, Math.PI * 2);
+            ctx.fill();
+          }
+        }
+
+        ctx.shadowBlur = 0;
+
+        if (!prefersReducedMotion) {
+          requestAnimationFrame(render);
+        }
+      }
+
+      render();
+    });
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", initStudioPreviews);
+  } else {
+    initStudioPreviews();
+  }
+  document.addEventListener("astro:page-load", initStudioPreviews);
+</script>
+
+<style>
+  .studio-preview {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    min-height: 10rem;
+    background: radial-gradient(ellipse at 50% 40%, #151d30 0%, #080c16 100%);
+    overflow: hidden;
+    cursor: crosshair;
+  }
+
+  .studio-preview__canvas {
+    display: block;
+    width: 100%;
+    height: 100%;
+  }
+
+  .studio-preview__hud {
+    position: absolute;
+    bottom: var(--space-xs);
+    left: var(--space-xs);
+    right: var(--space-xs);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    pointer-events: none;
+  }
+
+  .studio-preview__badge {
+    font-family: var(--font-mono);
+    font-size: 0.625rem;
+    font-weight: 700;
+    color: #e2e8f0;
+    background: rgba(15, 23, 42, 0.85);
+    padding: 0.15rem 0.45rem;
+    border-radius: var(--radius-xs);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    letter-spacing: 0.05em;
+    backdrop-filter: blur(4px);
+  }
+
+  .studio-preview__hint {
+    font-family: var(--font-mono);
+    font-size: 0.5625rem;
+    font-weight: 700;
+    color: var(--color-brand-accent);
+    background: rgba(0, 229, 255, 0.1);
+    padding: 0.15rem 0.4rem;
+    border-radius: var(--radius-xs);
+    border: 1px solid rgba(0, 229, 255, 0.3);
+    letter-spacing: 0.08em;
+    backdrop-filter: blur(4px);
+  }
+</style>

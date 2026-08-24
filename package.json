@@ -1,14 +1,14 @@
 {
-  "name": "astro-emdash-sqlite-r2-starter",
+  "name": "sredsol-com",
   "version": "1.0.0",
   "private": true,
-  "description": "Marketing + blog + docs starter with Astro and EmDash CMS (SQLite local / Dokploy + R2 in production)",
+  "description": "Computational systems, interactive instruments, and intelligent tools for learning, observation, and creation.",
   "license": "MIT",
   "packageManager": "pnpm@10.34.5",
   "type": "module",
   "engines": {
-    "node": ">=22.0.0",
-    "pnpm": ">=9.0.0"
+    "node": ">=24.0.0",
+    "pnpm": ">=10.0.0"
   },
   "emdash": {
     "seed": "seed/seed.json"
@@ -16,7 +16,6 @@
   "scripts": {
     "dev": "astro dev",
     "build": "astro build",
-
     "start": "node ./dist/server/entry.mjs",
     "preview": "astro preview",
     "astro": "astro",
@@ -93,5 +92,31 @@
     "typescript": "^6.0.3",
     "typescript-eslint": "^8.67.0",
     "vitest": "^4.1.10"
+  },
+  "stylelint": {
+    "extends": [
+      "stylelint-config-standard"
+    ],
+    "rules": {
+      "at-rule-no-unknown": [
+        true,
+        {
+          "ignoreAtRules": [
+            "theme",
+            "source",
+            "utility",
+            "variant",
+            "custom-variant",
+            "plugin"
+          ]
+        }
+      ],
+      "import-notation": "string",
+      "no-empty-source": null,
+      "selector-class-pattern": null,
+      "no-duplicate-selectors": null,
+      "no-descending-specificity": null,
+      "alpha-value-notation": null
+    }
   }
 }

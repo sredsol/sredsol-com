@@ -4,8 +4,11 @@
 FROM node:24-slim AS base
 ENV PNPM_HOME="/pnpm"
 ENV PATH="$PNPM_HOME:$PATH"
+ENV ASTRO_TELEMETRY_DISABLED="1"
+ENV DATABASE_URL="file:/app/data/emdash.db"
 RUN corepack enable
 WORKDIR /app
+RUN mkdir -p /app/data
 
 # ---- Dependencies --------------------------------------------------------
 FROM base AS deps
@@ -27,7 +30,7 @@ ENV HOST=0.0.0.0
 ENV PORT=4321
 # SQLite database + local media live here. Mount a persistent Dokploy volume
 # at /app/data so content survives redeploys.
-ENV DATABASE_URL=file:./data/emdash.db
+ENV DATABASE_URL=file:/app/data/emdash.db
 
 COPY --from=deps /app/node_modules ./node_modules
 COPY --from=build /app/dist ./dist

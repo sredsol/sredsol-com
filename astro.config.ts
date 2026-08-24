@@ -10,7 +10,7 @@ import emdash, { local, s3 } from "emdash/astro";
 import { sqlite } from "emdash/db";
 import { existsSync, readFileSync } from "node:fs";
 import { readdir, readFile } from "node:fs/promises";
-import { join, extname, basename } from "node:path";
+import { join, extname, basename, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { siteConfig } from "./src/config/site.config";
 
@@ -40,8 +40,16 @@ if (existsSync("./.env")) {
 }
 
 // Database: SQLite everywhere. Locally this is a file in ./data; on Dokploy the
-// same path is backed by a persistent volume. Override with DATABASE_URL.
-const databaseUrl = process.env.DATABASE_URL ?? "file:./data/emdash.db";
+// same path is backed by a persistent volume (/app/data). Override with DATABASE_URL.
+const defaultDbPath =
+  process.env.NODE_ENV === "production"
+    ? "/app/data/emdash.db"
+    : resolve(process.cwd(), "./data/emdash.db");
+const databaseUrl = process.env.DATABASE_URL
+  ? (process.env.DATABASE_URL.startsWith("file:")
+      ? process.env.DATABASE_URL
+      : `file:${process.env.DATABASE_URL}`)
+  : `file:${defaultDbPath}`;
 
 // Media storage: in production (the Docker/Dokploy image build sets
 // NODE_ENV=production) use S3-compatible storage for Cloudflare R2. `s3()`
